@@ -1,0 +1,16 @@
+# Node.js
+/backend/node_modules/
+/backend/dist/
+
+# Flutter
+/flutter_app/.dart_tool/
+/flutter_app/build/
+/flutter_app/.idea/
+/flutter_app/.gradle/
+
+# Logs
+*.log
+
+# System
+.DS_Store
+.env
