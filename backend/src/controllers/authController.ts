@@ -1,5 +1,5 @@
 // src/controllers/authController.ts
-import { RequestHandler, NextFunction } from 'express';
+import { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 

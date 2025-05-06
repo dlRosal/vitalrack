@@ -4,7 +4,7 @@ import {
   generateRoutine,
   listRoutines,
   logSession,
-  listSessions
+  listSessions,
 } from '../controllers/trainingController';
 import { requireAuth } from '../middlewares/auth';
 

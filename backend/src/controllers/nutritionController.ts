@@ -2,17 +2,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { searchFoods } from '../services/nutritionService';
-import Consumption, { IConsumption } from '../models/Consumption';
+import Consumption from '../models/Consumption';
 import { AuthRequest } from '../middlewares/auth';
 
 /**
  * GET /nutrition/search?q=<término>
  */
-export const search = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const q = (req.query.q as string)?.trim();
     if (!q) {
@@ -35,7 +31,7 @@ export const search = async (
 export const logConsumption = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     // 1) Verificar token y extraer userId desde el middleware

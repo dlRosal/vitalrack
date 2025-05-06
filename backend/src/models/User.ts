@@ -11,9 +11,9 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hash antes de guardar
@@ -24,10 +24,7 @@ UserSchema.pre<IUser>('save', async function (next) {
   next();
 });
 
-UserSchema.methods.comparePassword = function (
-  this: IUser,
-  candidate: string
-) {
+UserSchema.methods.comparePassword = function (this: IUser, candidate: string) {
   return bcrypt.compare(candidate, this.password);
 };
 

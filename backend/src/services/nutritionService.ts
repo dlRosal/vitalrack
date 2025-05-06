@@ -9,7 +9,7 @@ const MOCK_DATA: IFood[] = [
     calories: 52,
     protein: 0.3,
     carbs: 14,
-    fat: 0.2
+    fat: 0.2,
   }),
   new Food({
     externalId: 'mock-2',
@@ -17,8 +17,8 @@ const MOCK_DATA: IFood[] = [
     calories: 89,
     protein: 1.1,
     carbs: 23,
-    fat: 0.3
-  })
+    fat: 0.3,
+  }),
 ];
 
 export const searchFoods = async (query: string): Promise<IFood[]> => {
@@ -36,7 +36,7 @@ export const searchFoods = async (query: string): Promise<IFood[]> => {
     const doc = await Food.findOneAndUpdate(
       { externalId: f.externalId },
       { ...f.toObject() },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     docs.push(doc);
   }

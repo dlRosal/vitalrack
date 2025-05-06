@@ -18,21 +18,21 @@ export interface IRoutine extends Document {
 
 const ExerciseSchema = new Schema<IExercise>(
   {
-    name:    { type: String, required: true },
-    sets:    { type: Number, required: true },
-    reps:    { type: Number, required: true },
-    restSec: { type: Number, required: true }
+    name: { type: String, required: true },
+    sets: { type: Number, required: true },
+    reps: { type: Number, required: true },
+    restSec: { type: Number, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const RoutineSchema = new Schema<IRoutine>(
   {
-    userId:    { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    name:      { type: String, required: true },
-    exercises: { type: [ExerciseSchema], default: [] }
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    name: { type: String, required: true },
+    exercises: { type: [ExerciseSchema], default: [] },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model<IRoutine>('Routine', RoutineSchema);
