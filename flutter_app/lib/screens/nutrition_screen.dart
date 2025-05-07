@@ -5,7 +5,7 @@ import '../providers/nutrition_provider.dart';
 import '../models/food.dart';
 
 class NutritionScreen extends ConsumerStatefulWidget {
-  const NutritionScreen({Key? key}) : super(key: key);
+  const NutritionScreen({super.key});
 
   @override
   ConsumerState<NutritionScreen> createState() => _NutritionScreenState();
