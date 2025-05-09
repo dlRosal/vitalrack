@@ -7,32 +7,36 @@ import User from '../src/models/User';
 import Routine from '../src/models/Routine';
 import Session from '../src/models/Session';
 
-let mongoServer: MongoMemoryServer;
+let mongoServer: MongoMemoryServer | null = null;
 let token: string;
 let routineId: string;
 
 beforeAll(async () => {
-  // Iniciar MongoMemoryServer y conectar
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
+  // Usa la URI de CI si existe, sino levanta un in‐memory server:
+  const mongoUri = process.env.MONGO_URI
+    ? process.env.MONGO_URI
+    : (await (mongoServer = await MongoMemoryServer.create())).getUri();
 
-  // Limpiar colecciones
+  await mongoose.connect(mongoUri);
+
+  // Limpia colecciones
   await User.deleteMany({});
   await Routine.deleteMany({});
   await Session.deleteMany({});
 
-  // Registrar usuario y obtener token
-  const resReg = await request(app)
+  // Registra user y obtén token
+  const res = await request(app)
     .post('/auth/register')
     .send({ email: 'test@t.com', password: '123456' });
-  token = resReg.body.token;
+  token = res.body.token;
 });
 
 afterAll(async () => {
-  // Desconectar y parar en memoria
   await mongoose.disconnect();
-  await mongoServer.stop();
+  // Sólo detén el in‐memory server si lo levantaste
+  if (mongoServer) {
+    await mongoServer.stop();
+  }
 });
 
 describe('Training Endpoints', () => {
