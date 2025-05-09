@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "./",         // <-- incluir raiz de todo el proyecto
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,8 +13,7 @@
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "tests/**/*"             // <-- ahora TypeScript ve también tests
   ],
-  "exclude": ["dist"]
+  "exclude": ["dist", "node_modules"]
 }
-

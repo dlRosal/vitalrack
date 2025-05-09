@@ -1,9 +1,5 @@
 module.exports = {
   root: true,
-  env: {
-    node: true,
-    jest: true,
-  },
   parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
@@ -13,6 +9,6 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier'],
   parserOptions: { ecmaVersion: 2020, sourceType: 'module' },
   rules: {
-    'prettier/prettier': 'error',
+    'prettier/prettier': ['error', { endOfLine: 'auto' }],  // <--- aquí
   },
 };

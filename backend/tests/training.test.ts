@@ -1,26 +1,28 @@
 // tests/training.test.ts
 import request from 'supertest';
 import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import app from '../src/app';
-import dotenv from 'dotenv';
 import User from '../src/models/User';
 import Routine from '../src/models/Routine';
 import Session from '../src/models/Session';
 
-dotenv.config();
-
+let mongoServer: MongoMemoryServer;
 let token: string;
 let routineId: string;
 
 beforeAll(async () => {
-  // Conexión a la BD de testing
-  await mongoose.connect(process.env.MONGO_URI!);
+  // Iniciar MongoMemoryServer y conectar
+  mongoServer = await MongoMemoryServer.create();
+  const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
+
   // Limpiar colecciones
   await User.deleteMany({});
   await Routine.deleteMany({});
   await Session.deleteMany({});
 
-  // Registrar y obtener token
+  // Registrar usuario y obtener token
   const resReg = await request(app)
     .post('/auth/register')
     .send({ email: 'test@t.com', password: '123456' });
@@ -28,7 +30,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
+  // Desconectar y parar en memoria
+  await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
 describe('Training Endpoints', () => {
@@ -37,6 +41,7 @@ describe('Training Endpoints', () => {
       .post('/training/generate')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Full Body', level: 'beginner' });
+
     expect(res.status).toBe(201);
     expect(res.body.routine).toHaveProperty('_id');
     expect(Array.isArray(res.body.routine.exercises)).toBe(true);
@@ -47,6 +52,7 @@ describe('Training Endpoints', () => {
     const res = await request(app)
       .get('/training/routines')
       .set('Authorization', `Bearer ${token}`);
+
     expect(res.status).toBe(200);
     expect(res.body.routines.length).toBeGreaterThan(0);
     expect(res.body.routines[0]).toHaveProperty('name', 'Full Body');
@@ -57,12 +63,13 @@ describe('Training Endpoints', () => {
       routineId,
       duration: 45,
       entries: [{ exerciseName: 'Sentadillas', sets: 3, reps: 10, weight: 60 }],
-      notes: 'Buena sesión'
+      notes: 'Buena sesión',
     };
     const res = await request(app)
       .post('/training/log')
       .set('Authorization', `Bearer ${token}`)
       .send(payload);
+
     expect(res.status).toBe(201);
     expect(res.body.session).toHaveProperty('_id');
     expect(res.body.session.duration).toBe(45);
@@ -72,6 +79,7 @@ describe('Training Endpoints', () => {
     const res = await request(app)
       .get('/training/sessions')
       .set('Authorization', `Bearer ${token}`);
+
     expect(res.status).toBe(200);
     expect(res.body.sessions.length).toBeGreaterThan(0);
     expect(res.body.sessions[0]).toHaveProperty('notes', 'Buena sesión');
