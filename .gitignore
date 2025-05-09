@@ -14,3 +14,8 @@
 # System
 .DS_Store
 .env
+
+# Ignorar artefactos de cobertura del backend
+/backend/coverage/
+/backend/lcov.info
+**/backend/coverage/lcov-report/
