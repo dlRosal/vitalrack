@@ -14,8 +14,7 @@ jobs:
       mongo:
         image: mongo:5.0
         ports: ['27017:27017']
-    env:
-      MONGO_URI: mongodb://localhost:27017/vitalrack_test
+    
     defaults:
       run:
         working-directory: backend
