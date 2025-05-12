@@ -1,4 +1,11 @@
 // tests/training.test.ts
+
+// 1) Carga .env y asegúrate de tener un JWT_SECRET para firmar los tokens
+import dotenv from 'dotenv';
+dotenv.config();
+// Si no viene de fuera (ej. en GH Actions), ponemos uno fijo:
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
+
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -12,16 +19,16 @@ let token: string;
 let routineId: string;
 
 beforeAll(async () => {
-  // Arranca un Mongo en memoria y conéctate a él
+  // Arranca un MongoDB en memoria
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri());
 
-  // Limpia colecciones antes de empezar
+  // Vacía las colecciones
   await User.deleteMany({});
   await Routine.deleteMany({});
   await Session.deleteMany({});
 
-  // Registra un usuario y obtén token
+  // Registra un usuario y obtén el token JWT
   const res = await request(app)
     .post('/auth/register')
     .send({ email: 'test@t.com', password: '123456' });
@@ -29,7 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // Desconéctate y detén el servidor en memoria
+  // Cierra conexión y detén Mongo en memoria
   await mongoose.disconnect();
   await mongoServer.stop();
 });

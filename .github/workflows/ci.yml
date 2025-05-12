@@ -10,6 +10,13 @@ jobs:
   backend:
     name: Backend Tests
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:5.0
+        ports: ['27017:27017']
+    env:
+      MONGO_URI: mongodb://localhost:27017/vitalrack_test
+      JWT_SECRET: testsecret
     defaults:
       run:
         working-directory: backend
@@ -61,8 +68,8 @@ jobs:
   deploy-flutter-web:
     name: Deploy Flutter Web to Netlify
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
     needs: flutter
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -82,10 +89,9 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
-        run: |
-          netlify --version
-          netlify link --id ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify deploy --prod --dir=flutter_app/build/web
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID:   ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify link --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN
+          netlify deploy --prod --dir=flutter_app/build/web
