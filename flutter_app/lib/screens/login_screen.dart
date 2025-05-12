@@ -24,7 +24,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
+    // Lanza la acción de login
     await ref.read(authProvider.notifier).login(email, password);
+
+    // Si este State ya no está montado, abortamos
+    if (!mounted) return;
+
     final state = ref.read(authProvider);
     if (state.token != null) {
       Navigator.pushReplacementNamed(context, '/home');
@@ -34,7 +40,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _register() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
+    // Lanza la acción de register
     await ref.read(authProvider.notifier).register(email, password);
+
+    // Comprueba de nuevo el mounted
+    if (!mounted) return;
+
     final state = ref.read(authProvider);
     if (state.token != null) {
       Navigator.pushReplacementNamed(context, '/home');
@@ -64,10 +76,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               obscureText: true,
             ),
             const SizedBox(height: 20),
+
+            // Spinner de carga
             if (authState.loading) ...[
               const CircularProgressIndicator(),
               const SizedBox(height: 20),
             ],
+
+            // Mensaje de error
             if (authState.error != null) ...[
               Text(
                 authState.error!,
@@ -75,6 +91,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 20),
             ],
+
+            // Botones Login / Register
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
