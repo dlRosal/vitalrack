@@ -24,11 +24,18 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     final query = _searchController.text.trim();
     if (query.isNotEmpty) {
       await ref.read(nutritionProvider.notifier).search(query);
+      // Si quisieras mostrar un SnackBar aquí tras la búsqueda, recuerda:
+      // if (!mounted) return;
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('Búsqueda completada')),
+      // );
     }
   }
 
   Future<void> _logConsumption(String foodId) async {
     await ref.read(nutritionProvider.notifier).logConsumption(foodId, 100);
+    // Aseguramos que el State aún esté montado antes de usar context
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Consumo registrado')),
     );
@@ -73,7 +80,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                     child: ListTile(
                       title: Text(food.name),
                       subtitle: Text(
-                        'Cal: \${food.calories}, P: \${food.protein}, C: \${food.carbs}, F: \${food.fat}'
+                        'Cal: ${food.calories}, P: ${food.protein}, C: ${food.carbs}, F: ${food.fat}',
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.add),
