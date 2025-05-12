@@ -16,7 +16,6 @@ jobs:
         ports: ['27017:27017']
     env:
       MONGO_URI: mongodb://localhost:27017/vitalrack_test
-      JWT_SECRET: testsecret
     defaults:
       run:
         working-directory: backend
@@ -35,6 +34,13 @@ jobs:
       - name: Run backend tests
         run: npm test
 
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-backend
+          path: coverage/
+
   flutter:
     name: Flutter Analyze & Tests
     runs-on: ubuntu-latest
@@ -45,7 +51,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.10.6'     # <-- especificamos versión concreta
 
       - name: Cache Flutter packages
         uses: actions/cache@v3
@@ -54,21 +60,21 @@ jobs:
           key: ${{ runner.os }}-pub-${{ hashFiles('flutter_app/pubspec.lock') }}
 
       - name: Install dependencies
-        working-directory: flutter_app
         run: flutter pub get
+        working-directory: flutter_app
 
       - name: Analyze
-        working-directory: flutter_app
         run: flutter analyze
+        working-directory: flutter_app
 
       - name: Run Flutter tests
-        working-directory: flutter_app
         run: flutter test --coverage
+        working-directory: flutter_app
 
   deploy-flutter-web:
     name: Deploy Flutter Web to Netlify
-    if: github.ref == 'refs/heads/main'
     needs: flutter
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -77,13 +83,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.10.6'
 
-      - name: Install dependencies & build web
-        working-directory: flutter_app
+      - name: Install & build web
         run: |
           flutter pub get
           flutter build web --release
+        working-directory: flutter_app
 
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
@@ -93,5 +99,5 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID:   ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          netlify link --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN
+          netlify link --id $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN
           netlify deploy --prod --dir=flutter_app/build/web
