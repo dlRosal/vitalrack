@@ -12,8 +12,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: 'https://vitalrack.netlify.app', // o '*' para permitir todos
-    credentials: true, // si necesitas cookies/token,
+    origin: 'https://vitalrack.netlify.app', // o '*' durante desarrollo
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   }),
 );
 
