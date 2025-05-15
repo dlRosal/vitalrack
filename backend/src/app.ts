@@ -3,11 +3,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import authRouter from './routes/auth';
 import nutritionRouter from './routes/nutrition';
 import trainingRouter from './routes/training';
 
 const app = express();
+
+app.use(
+  cors({
+    origin: 'https://vitalrack.netlify.app', // o '*' para permitir todos
+    credentials: true, // si necesitas cookies/token,
+  }),
+);
 
 // Parse JSON bodies
 app.use(express.json());
