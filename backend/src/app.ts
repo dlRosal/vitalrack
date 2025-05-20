@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: 'https://vitalrack.netlify.app', // o '*' durante desarrollo
+    origin: true, // o '*' durante desarrollo
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

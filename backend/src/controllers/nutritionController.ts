@@ -23,6 +23,12 @@ export const search = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
+// GET /nutrition/history
+export const getHistory = async (req: AuthRequest, res: Response) => {
+  const history = await Consumption.find({ userId: req.userId });
+  res.json({ history });
+};
+
 /**
  * POST /nutrition/log
  * Body: { foodId: string, quantity: number }
