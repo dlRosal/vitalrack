@@ -28,6 +28,7 @@ export const generateRoutine = async (
 
     // Lógica simple de ejemplo: full-body con 3 ejercicios
     const exercises: IExercise[] = [
+      
       { name: 'Sentadillas', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
       { name: 'Press de banca', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
       { name: 'Remo con mancuerna', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
