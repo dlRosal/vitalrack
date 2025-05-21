@@ -10,7 +10,7 @@ class AuthService {
   };
 
   /// Constructor, opcionalmente configurar baseUrl
-  AuthService({String baseUrl = 'http://localhost:4000/auth'})
+  AuthService({String baseUrl = 'http://localhost:10000/auth'})
       : _baseUrl = baseUrl;
 
   /// Registra un nuevo usuario y devuelve el token JWT
@@ -18,11 +18,11 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final uri = Uri.parse('\$_baseUrl/register');
+    final uri = Uri.parse('$_baseUrl/register');
     final body = jsonEncode({'email': email, 'password': password});
     final response = await http.post(uri, headers: _headers, body: body);
     if (response.statusCode != 201) {
-      throw Exception('Error al registrar usuario: \${response.body}');
+      throw Exception('Error al registrar usuario: ${response.body}');
     }
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     return data['token'] as String;
@@ -37,7 +37,7 @@ class AuthService {
     final body = jsonEncode({'email': email, 'password': password});
     final response = await http.post(uri, headers: _headers, body: body);
     if (response.statusCode != 200) {
-      throw Exception('Error al iniciar sesión: \${response.body}');
+      throw Exception('Error al iniciar sesión: ${response.body}');
     }
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     return data['token'] as String;

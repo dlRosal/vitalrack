@@ -1,3 +1,4 @@
+# pubspec.yaml (flutter_app)
 name: flutter_app
 description: "Vitalrack"
 publish_to: 'none'
@@ -5,19 +6,19 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.19.0 <4.0.0"    # <-- ampliamos el rango para poder usar flutter_lints ^5
+  sdk: ">=2.19.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  http: ^0.13.5              # <-- forzamos la serie 0.13.x, compatible con Dart 2.19
+  http: ^0.13.5
   flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0         # <-- versión válida existente
 
 flutter:
   uses-material-design: true
