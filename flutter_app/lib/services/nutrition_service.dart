@@ -1,61 +1,62 @@
-// lib/services/nutrition_service.dart
+// flutter_app/lib/services/nutrition_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/food.dart';
 
 /// Servicio para consumir los endpoints de Nutrición del backend.
 class NutritionService {
-  /// URL base para nutrición (search y log)
-  final String _baseUrl;
+  /// Toma la URL base de la variable --dart-define o usa localhost en dev.
+  static const _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:10000',
+  );
 
-  /// Cabeceras HTTP, incluyendo el token JWT
   final Map<String, String> _headers;
 
-  /// Crea el servicio con el token JWT y opcionalmente la URL base.
-  NutritionService({
-    required String token,
-    String baseUrl = 'http://localhost:4000/nutrition',
-  })  : _baseUrl = baseUrl,
-        _headers = {
+  /// Crea el servicio con el token JWT para las cabeceras.
+  NutritionService({ required String token })
+      : _headers = {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         };
 
   /// Busca alimentos por nombre.
-  ///
-  /// Llama al endpoint GET `/nutrition/search?q=<query>` y devuelve una lista de [Food].
-  ///
-  /// Parámetro:
-  /// - `query`: término de búsqueda. Puede contener símbolos como `<` y `>`,
-  ///   por ejemplo `'<manzana>'`, que **no** deben interpretarse como HTML.
   Future<List<Food>> searchFoods(String query) async {
-    final uri = Uri.parse('$_baseUrl/search?q=${Uri.encodeComponent(query)}');
+    final uri = Uri.parse(
+      '$_baseUrl/nutrition/search?q=${Uri.encodeComponent(query)}',
+    );
     final response = await http.get(uri, headers: _headers);
     if (response.statusCode != 200) {
       throw Exception('Error al buscar alimentos: ${response.body}');
     }
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final items = data['foods'] as List<dynamic>;
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final items = json['foods'] as List<dynamic>;
     return items
         .map((e) => Food.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   /// Registra un consumo de un alimento.
-  ///
-  /// Llama al endpoint POST `/nutrition/log` con body:
-  /// ```json
-  /// { "foodId": "<id_del_alimento>", "quantity": 123 }
-  /// ```
   Future<void> logConsumption({
     required String foodId,
     required int quantity,
   }) async {
-    final uri = Uri.parse('$_baseUrl/log');
+    final uri = Uri.parse('$_baseUrl/nutrition/log');
     final body = jsonEncode({'foodId': foodId, 'quantity': quantity});
     final response = await http.post(uri, headers: _headers, body: body);
     if (response.statusCode != 201) {
       throw Exception('Error al registrar consumo: ${response.body}');
     }
+  }
+
+  /// Obtiene el historial de consumos del usuario.
+  Future<List<Map<String, dynamic>>> fetchConsumptionHistory() async {
+    final uri = Uri.parse('$_baseUrl/nutrition/history');
+    final response = await http.get(uri, headers: _headers);
+    if (response.statusCode != 200) {
+      throw Exception('Error al obtener historial: ${response.body}');
+    }
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(json['history'] as List<dynamic>);
   }
 }

@@ -19,3 +19,6 @@
 /backend/coverage/
 /backend/lcov.info
 **/backend/coverage/lcov-report/
+
+# Local Netlify folder
+.netlify
