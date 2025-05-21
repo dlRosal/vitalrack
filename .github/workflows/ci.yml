@@ -26,10 +26,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm ci
-      - run: npm test
-      - uses: actions/upload-artifact@v2
+      - name: Install dependencies
+        run: npm ci
+      - name: Run backend tests
+        run: npm test
+      - name: Upload coverage report
         if: always()
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-backend
           path: coverage/
@@ -46,13 +49,17 @@ jobs:
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-pub-${{ hashFiles('flutter_app/pubspec.lock') }}
-      - run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
         working-directory: flutter_app
-      - run: flutter analyze
+      - name: Analyze
+        run: flutter analyze
         working-directory: flutter_app
-      - run: flutter test --coverage
+      - name: Run tests
+        run: flutter test --coverage
         working-directory: flutter_app
-      - uses: actions/upload-artifact@v2
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
         with:
           name: flutter-coverage
           path: flutter_app/coverage
