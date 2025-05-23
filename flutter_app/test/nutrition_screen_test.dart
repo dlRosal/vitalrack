@@ -49,7 +49,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [nutritionProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(home: NutritionScreen()),
+          child: const MaterialApp(home: NutritionScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -66,7 +66,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [nutritionProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(home: NutritionScreen()),
+          child: const MaterialApp(home: NutritionScreen()),
         ),
       );
       await tester.pump();
@@ -80,7 +80,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [nutritionProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(home: NutritionScreen()),
+          child: const MaterialApp(home: NutritionScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -112,7 +112,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [nutritionProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(home: NutritionScreen()),
+          child: const MaterialApp(home: NutritionScreen()),
         ),
       );
       await tester.pumpAndSettle();
