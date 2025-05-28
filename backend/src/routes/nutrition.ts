@@ -50,3 +50,5 @@ router.get('/history', requireAuth, async (req: AuthRequest, res: Response, next
     next(err);
   }
 });
+
+export default router;
