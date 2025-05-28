@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_wrapper.dart';
 import 'models/routine.dart';
+import 'screens/home_screen.dart';
 import 'screens/nutrition_screen.dart';
 import 'screens/training_screen.dart';
 import 'screens/routine_detail_screen.dart';
+
 
 void main() {
   runApp(const ProviderScope(child: VitalrackApp()));
@@ -19,7 +21,6 @@ class VitalrackApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Vitalrack',
       theme: ThemeData(primarySwatch: Colors.blue),
-      // El home se decide según el estado de auth (AuthWrapper)
       home: const AuthWrapper(),
       routes: {
         // Rutas protegidas tras login
