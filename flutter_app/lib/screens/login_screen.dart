@@ -1,4 +1,3 @@
-// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -24,13 +23,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
-    // Lanza la acción de login
     await ref.read(authProvider.notifier).login(email, password);
-
-    // Si este State ya no está montado, abortamos
     if (!mounted) return;
-
     final state = ref.read(authProvider);
     if (state.token != null) {
       Navigator.pushReplacementNamed(context, '/home');
@@ -40,13 +34,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _register() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
-    // Lanza la acción de register
     await ref.read(authProvider.notifier).register(email, password);
-
-    // Comprueba de nuevo el mounted
     if (!mounted) return;
-
     final state = ref.read(authProvider);
     if (state.token != null) {
       Navigator.pushReplacementNamed(context, '/home');
@@ -57,33 +46,66 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Login'),
+        backgroundColor: Colors.transparent,
+        title: const Text(
+          'Login',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                labelStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Password',
+                labelStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-
-            // Spinner de carga
+            const SizedBox(height: 24),
             if (authState.loading) ...[
-              const CircularProgressIndicator(),
+              const CircularProgressIndicator(color: Colors.white),
               const SizedBox(height: 20),
             ],
-
-            // Mensaje de error
             if (authState.error != null) ...[
               Text(
                 authState.error!,
@@ -91,18 +113,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 20),
             ],
-
-            // Botones Login / Register
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: authState.loading ? null : _login,
-                  child: const Text('Login'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2F855A),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 1.1,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: authState.loading ? null : _register,
-                  child: const Text('Register'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2C5282),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Register',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 1.1,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
             ),
