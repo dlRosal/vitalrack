@@ -10,15 +10,17 @@ import trainingRouter from './routes/training';
 
 const app = express();
 
-// CORS: en prod lee FRONTEND_URL de .env, en dev permite cualquiera
-const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 app.use(
   cors({
-    origin: (incomingOrigin, callback) => {
-      if (process.env.NODE_ENV !== 'production' || incomingOrigin === FRONTEND_URL) {
-        callback(null, true);
+    origin: (origin, cb) => {
+      // 1) permitir si es sin Origin (ej: curl o server‐to‐server)
+      // 2) o si coincide exactamente con tu frontend
+      if (!origin || origin === FRONTEND_URL) {
+        cb(null, true);
       } else {
-        callback(new Error('Origen no permitido'), false);
+        cb(new Error(`Origen ${origin} no permitido`), false);
       }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
