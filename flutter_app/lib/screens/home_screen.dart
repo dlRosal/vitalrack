@@ -15,12 +15,12 @@ class HomeScreen extends StatelessWidget {
             children: [
               SizedBox(
                 height: 100,
-                child: Image.asset('assets/logosinfondo.png'),
+                child: Image.asset('assets/logo.png'),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'Bienvenido a Vitalrack',
-                style:  TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFE0E0E0),
@@ -58,9 +58,17 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required String route,
   }) {
-    Color backgroundColor = color.withOpacity(0.15);
-    Color borderColor = color.withOpacity(0.6);
-    Color iconColor = color;
+    // Colores claros suaves para degradado según color principal
+    Color startColor;
+    Color endColor;
+
+    if (color == const Color(0xFF2F855A)) {
+      startColor = const Color(0xFF68D391);
+      endColor = const Color(0xFF38A169);
+    } else {
+      startColor = const Color(0xFF63B3ED);
+      endColor = const Color(0xFF3182CE);
+    }
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
@@ -84,18 +92,23 @@ class HomeScreen extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: backgroundColor,
-                border: Border.all(color: borderColor, width: 2),
+                gradient: LinearGradient(
+                  colors: [
+                    startColor.withOpacity(0.9),
+                    endColor.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
+                    color: endColor.withOpacity(0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              alignment: Alignment.center,
-              child: Icon(icon, size: 36, color: iconColor),
+              child: Icon(icon, size: 36, color: endColor),
             ),
             const SizedBox(width: 24),
             Text(
