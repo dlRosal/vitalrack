@@ -51,4 +51,12 @@ class AuthService {
     }
     return jsonDecode(response.body)['token'] as String;
   }
+
+  Future<void> logout() async {
+    final uri = Uri.parse('$_baseUrl/logout');
+    final response = await http.post(uri, headers: _headers);
+    if (response.statusCode != 204) {
+      throw Exception('Error al cerrar sesión: ${response.body}');
+    }
+  }
 }

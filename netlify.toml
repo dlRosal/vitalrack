@@ -9,7 +9,7 @@ redirects = []
 [build]
   base    = "flutter_app"
   publish = "flutter_app/build/web"
-  command = "flutter build web --release --dart-define=API_BASE_URL=$API_BASE_URL"
+  command = "flutter pub get && flutter build web --release --dart-define=API_BASE_URL=https://vitalrack-backend.onrender.com"
 
 [[redirects]]
   from   = "/*"
