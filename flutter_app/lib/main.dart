@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_wrapper.dart';
 import 'models/routine.dart';
-import 'screens/home_screen.dart';
 import 'screens/nutrition_screen.dart';
 import 'screens/training_screen.dart';
 import 'screens/routine_detail_screen.dart';
