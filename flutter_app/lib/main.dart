@@ -20,7 +20,7 @@ class VitalrackApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Vitalrack',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const AuthWrapper(),
+      home: const NutritionScreen(),
       routes: {
         // Rutas protegidas tras login
         '/nutrition': (_) => const NutritionScreen(),

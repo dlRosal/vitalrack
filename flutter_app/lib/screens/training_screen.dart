@@ -1,4 +1,3 @@
-// lib/screens/training_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/training_provider.dart';
@@ -47,11 +46,20 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     final state = ref.watch(trainingProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF121921), // fondo oscuro elegante
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1F2A37),
         title: const Text('Entrenamiento'),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: 'Rutinas'), Tab(text: 'Sesiones')],
+          indicatorColor: Colors.lightBlueAccent,
+          labelColor: Colors.lightBlueAccent,
+          unselectedLabelColor: Colors.grey,
+          tabs: const [
+            Tab(text: 'Rutinas'),
+            Tab(text: 'Sesiones'),
+          ],
         ),
       ),
       body: TabBarView(
@@ -65,25 +73,65 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
               children: [
                 TextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
                     labelText: 'Nombre de la rutina',
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: const Color(0xFF1F2A37),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.lightBlueAccent, width: 2),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  cursorColor: Colors.lightBlueAccent,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F2A37),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade700),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _level,
+                    dropdownColor: const Color(0xFF1F2A37),
+                    isExpanded: true,
+                    iconEnabledColor: Colors.lightBlueAccent,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'beginner', child: Text('Beginner')),
+                      DropdownMenuItem(
+                          value: 'intermediate', child: Text('Intermediate')),
+                      DropdownMenuItem(
+                          value: 'advanced', child: Text('Advanced')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _level = v);
+                    },
                   ),
                 ),
                 const SizedBox(height: 12),
-                DropdownButton<String>(
-                  value: _level,
-                  isExpanded: true,
-                  items: const [
-                    DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
-                    DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
-                    DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) setState(() => _level = v);
-                  },
-                ),
-                const SizedBox(height: 12),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlueAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 6,
+                    shadowColor: Colors.lightBlueAccent.withOpacity(0.6),
+                    textStyle:
+                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   onPressed: state.loading ? null : _generate,
                   child: state.loading
                       ? const SizedBox(
@@ -99,19 +147,46 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                 const SizedBox(height: 16),
                 Expanded(
                   child: state.routines.isEmpty
-                      ? const Center(child: Text('Sin rutinas creadas'))
+                      ? const Center(
+                          child: Text(
+                            'Sin rutinas creadas',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: state.routines.length,
                           itemBuilder: (context, index) {
                             final Routine r = state.routines[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1F2A37),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.shade700),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(2, 2),
+                                  ),
+                                ],
+                              ),
                               child: ListTile(
-                                title: Text(r.name),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                title: Text(
+                                  r.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                  ),
+                                ),
                                 subtitle: Text(
                                   'Ejercicios: ${r.exercises.length}',
+                                  style: const TextStyle(color: Colors.grey),
                                 ),
-                                onTap: () { // Navegar al detalle
+                                onTap: () {
                                   Navigator.pushNamed(
                                     context,
                                     '/training/detail',
@@ -130,23 +205,49 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: state.sessions.isEmpty && !state.loading
-                ? const Center(child: Text('Sin sesiones registradas'))
+                ? const Center(
+                    child: Text(
+                      'Sin sesiones registradas',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
                 : state.loading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.lightBlueAccent,
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: state.sessions.length,
                         itemBuilder: (context, index) {
                           final Session s = state.sessions[index];
-                          final dateStr = s.date
-                              .toLocal()
-                              .toString()
-                              .split(' ')[0];
-                          return Card(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
+                          final dateStr = s.date.toLocal().toString().split(' ')[0];
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1F2A37),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade700),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(2, 2),
+                                ),
+                              ],
+                            ),
                             child: ListTile(
-                              title: Text('Fecha: $dateStr'),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              title: Text(
+                                'Fecha: $dateStr',
+                                style: const TextStyle(
+                                    color: Colors.white, fontWeight: FontWeight.w600),
+                              ),
                               subtitle: Text(
-                                  'Duración: ${s.duration} min - Notas: ${s.notes ?? '-'}'),
+                                'Duración: ${s.duration} min - Notas: ${s.notes ?? '-'}',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
                             ),
                           );
                         },
