@@ -58,17 +58,9 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required String route,
   }) {
-    // Colores claros suaves para degradado según color principal
-    Color startColor;
-    Color endColor;
-
-    if (color == const Color(0xFF2F855A)) {
-      startColor = const Color(0xFF68D391);
-      endColor = const Color(0xFF38A169);
-    } else {
-      startColor = const Color(0xFF63B3ED);
-      endColor = const Color(0xFF3182CE);
-    }
+    Color backgroundColor = color.withOpacity(0.15);
+    Color borderColor = color.withOpacity(0.6);
+    Color iconColor = color;
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
@@ -92,23 +84,18 @@ class HomeScreen extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    startColor.withOpacity(0.9),
-                    endColor.withOpacity(0.7),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: backgroundColor,
+                border: Border.all(color: borderColor, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: endColor.withOpacity(0.5),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
-              child: Icon(icon, size: 36, color: endColor),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 36, color: iconColor),
             ),
             const SizedBox(width: 24),
             Text(
