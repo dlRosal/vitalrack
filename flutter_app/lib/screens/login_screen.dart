@@ -136,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   if (authState.error != null) ...[
                     Text(
                       authState.error!,
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.white),
                     ),
                     const SizedBox(height: 20),
                   ],
