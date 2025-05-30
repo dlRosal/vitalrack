@@ -4,6 +4,7 @@ import UserModel from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -46,9 +47,9 @@ router.post(
       }
 
       // 2) Crear y guardar
-      const hash = await bcrypt.hash(password, 10);
-      const user = new UserModel({ email, password: hash });
+      const user = new UserModel({ email, password });
       await user.save();
+      console.log('Usuario registrado:', user._id, 'en base', mongoose.connection.name);
 
       // 3) Devolver token
       const token = signToken(user._id.toString());
