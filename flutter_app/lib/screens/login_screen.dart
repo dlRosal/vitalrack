@@ -50,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text(
-          'Login',
+          'Bienvenido a VITALRACK',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
