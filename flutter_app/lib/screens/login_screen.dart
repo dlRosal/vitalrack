@@ -68,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               // LOGO ENCIMA
               Image.asset(
-                'assets/logo.png',
+                'assets/logosinfondo.png',
                 height: 120,
               ),
               const SizedBox(height: 32),
