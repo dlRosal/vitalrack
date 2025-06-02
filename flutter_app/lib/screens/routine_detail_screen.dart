@@ -8,12 +8,19 @@ class RoutineDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = const Color(0xFF0C0F1A);
+    final cardColor = const Color(0xFF1B2233);
+    final accent = const Color(0xFF2196F3);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Fondo oscuro
+      backgroundColor: bgColor,
       appBar: AppBar(
-        title: Text(routine.name),
-        backgroundColor: const Color(0xFF1F1F1F),
-        foregroundColor: Colors.white,
+        title: Text(
+          routine.name,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -30,19 +37,29 @@ class RoutineDetailScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final ex = routine.exercises[index];
                   return Card(
-                    color: const Color(0xFF1E1E1E),
+                    color: cardColor,
+                    elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 2,
                     child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: accent,
+                        child: Text(
+                          '${index + 1}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
                       title: Text(
                         ex.name,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       subtitle: Text(
                         'Sets: ${ex.sets}  Reps: ${ex.reps}\nDescanso: ${ex.restSec}s',
-                        style: const TextStyle(color: Colors.grey),
+                        style: const TextStyle(color: Colors.white70),
                       ),
                     ),
                   );

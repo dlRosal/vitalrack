@@ -1,4 +1,3 @@
-// lib/screens/nutrition_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/nutrition_provider.dart';
@@ -31,7 +30,10 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     await ref.read(nutritionProvider.notifier).logConsumption(foodId, 100);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Consumo registrado')),
+      const SnackBar(
+        content: Text('Consumo registrado'),
+        backgroundColor: Color(0xFF2E7D32), // verde oscuro
+      ),
     );
   }
 
@@ -39,11 +41,15 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(nutritionProvider);
 
+    final bgColor = const Color(0xFF0F1A12); // Fondo general con tinte verde oscuro
+    final cardColor = const Color(0xFF1B2A21); // Tarjetas
+    final accent = const Color(0xFF66BB6A); // Verde acento
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Fondo oscuro
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: const Text('Nutrición'),
-        backgroundColor: const Color(0xFF1F1F1F),
+        backgroundColor: const Color(0xFF1C2B21),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -58,29 +64,32 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Buscar alimento',
-                      labelStyle: const TextStyle(color: Colors.grey),
+                      labelStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: const Color(0xFF1E1E1E),
+                      fillColor: cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      suffixIcon: const Icon(Icons.search, color: Colors.grey),
+                      suffixIcon: Icon(Icons.search, color: accent),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
+                  icon: Icon(Icons.search, color: accent),
                   onPressed: state.loading ? null : _search,
                 ),
               ],
             ),
             const SizedBox(height: 12),
             if (state.loading)
-              const CircularProgressIndicator(color: Colors.greenAccent),
+              CircularProgressIndicator(color: accent),
             if (state.error != null)
-              Text(state.error!, style: const TextStyle(color: Colors.redAccent)),
+              Text(
+                state.error!,
+                style: const TextStyle(color: Colors.redAccent),
+              ),
             const SizedBox(height: 12),
             Expanded(
               child: ListView.builder(
@@ -88,7 +97,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 itemBuilder: (context, index) {
                   final Food food = state.foods[index];
                   return Card(
-                    color: const Color(0xFF1E1E1E),
+                    color: cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -99,11 +108,12 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                         style: const TextStyle(color: Colors.white),
                       ),
                       subtitle: Text(
-                        'Cal: ${food.calories}, P: ${food.protein}, C: ${food.carbs}, F: ${food.fat}',
-                        style: const TextStyle(color: Colors.grey),
+                        'Cal: ${food.calories} | P: ${food.protein}g | C: ${food.carbs}g | F: ${food.fat}g',
+                        style: const TextStyle(color: Colors.white70),
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.add, color: Colors.greenAccent),
+                        icon: Icon(Icons.add_circle, color: accent, size: 28),
+                        tooltip: 'Añadir consumo',
                         onPressed: () => _logConsumption(food.id),
                       ),
                     ),

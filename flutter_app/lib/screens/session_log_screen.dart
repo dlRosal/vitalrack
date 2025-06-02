@@ -20,9 +20,8 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
   @override
   void initState() {
     super.initState();
-    _weightControllers = widget.routine.exercises
-        .map((_) => TextEditingController())
-        .toList();
+    _weightControllers =
+        widget.routine.exercises.map((_) => TextEditingController()).toList();
   }
 
   @override
@@ -76,79 +75,58 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     Navigator.of(context).pop();
   }
 
-  InputDecoration _darkInputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey),
-      filled: true,
-      fillColor: const Color(0xFF1E1E1E),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.greenAccent),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
 
+    final bgColor = const Color(0xFF0C0F1A);
+    final fieldColor = const Color(0xFF1B2233);
+    final accent = const Color(0xFF2196F3);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: bgColor,
       appBar: AppBar(
-        title: Text('Log Sesión: ${widget.routine.name}'),
-        backgroundColor: const Color(0xFF1F1F1F),
-        foregroundColor: Colors.white,
-        elevation: 2,
+        backgroundColor: Colors.black,
+        title: Text(
+          'Log Sesión: ${widget.routine.name}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            TextField(
+            _buildInputField(
               controller: _durationController,
+              label: 'Duración (minutos)',
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: _darkInputDecoration('Duración (minutos)'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ...List.generate(widget.routine.exercises.length, (i) {
               final ex = widget.routine.exercises[i];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextField(
-                  controller: _weightControllers[i],
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(color: Colors.white),
-                  decoration: _darkInputDecoration(
-                    '${ex.name} (${ex.sets}×${ex.reps}) Peso (kg)',
-                  ),
-                ),
+              return _buildInputField(
+                controller: _weightControllers[i],
+                label:
+                    '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               );
             }),
-            TextField(
+            _buildInputField(
               controller: _notesController,
+              label: 'Notas (opcional)',
               maxLines: 2,
-              style: const TextStyle(color: Colors.white),
-              decoration: _darkInputDecoration('Notas (opcional)'),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: state.loading ? null : _saveSession,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent[700],
-                foregroundColor: Colors.black,
-                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: accent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 8,
-                shadowColor: Colors.greenAccent.withOpacity(0.4),
               ),
               child: state.loading
                   ? const SizedBox(
@@ -162,12 +140,40 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
                   : const Text(
                       'Registrar Sesión',
                       style: TextStyle(
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2233),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(
+              vertical: 14, horizontal: 16),
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          border: InputBorder.none,
         ),
       ),
     );

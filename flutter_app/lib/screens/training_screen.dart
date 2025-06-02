@@ -41,38 +41,25 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     _nameController.clear();
   }
 
-  InputDecoration _darkInput(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey),
-      filled: true,
-      fillColor: const Color(0xFF1E1E1E),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.greenAccent),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
 
+    final bgColor = const Color(0xFF0C0F1A);
+    final cardColor = const Color(0xFF1B2233);
+    final accent = const Color(0xFF2196F3);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: const Text('Entrenamiento'),
-        backgroundColor: const Color(0xFF1F1F1F),
+        backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.greenAccent,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.greenAccent,
+          indicatorColor: accent,
+          labelColor: accent,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(text: 'Rutinas'),
             Tab(text: 'Sesiones'),
@@ -88,54 +75,20 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(
+                _buildInputField(
                   controller: _nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: _darkInput('Nombre de la rutina'),
+                  label: 'Nombre de la rutina',
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _level,
-                      dropdownColor: const Color(0xFF2C2C2C),
-                      isExpanded: true,
-                      style: const TextStyle(color: Colors.white),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'beginner',
-                          child: Text('Beginner'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'intermediate',
-                          child: Text('Intermediate'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'advanced',
-                          child: Text('Advanced'),
-                        ),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) setState(() => _level = v);
-                      },
-                    ),
-                  ),
-                ),
+                _buildDropdown(),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: state.loading ? null : _generate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.greenAccent[700],
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 48),
+                    backgroundColor: accent,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: state.loading
@@ -149,7 +102,9 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                         )
                       : const Text(
                           'Generar Rutina',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
                 ),
                 const SizedBox(height: 16),
@@ -158,7 +113,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                       ? const Center(
                           child: Text(
                             'Sin rutinas creadas',
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: Colors.white70),
                           ),
                         )
                       : ListView.builder(
@@ -166,17 +121,20 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                           itemBuilder: (context, index) {
                             final Routine r = state.routines[index];
                             return Card(
-                              color: const Color(0xFF1E1E1E),
+                              color: cardColor,
                               margin: const EdgeInsets.symmetric(vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               child: ListTile(
-                                title: Text(r.name,
-                                    style: const TextStyle(color: Colors.white)),
+                                title: Text(
+                                  r.name,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                                 subtitle: Text(
                                   'Ejercicios: ${r.exercises.length}',
-                                  style: const TextStyle(color: Colors.grey),
+                                  style: const TextStyle(color: Colors.white70),
                                 ),
-                                trailing: const Icon(Icons.chevron_right,
-                                    color: Colors.greenAccent),
                                 onTap: () {
                                   Navigator.pushNamed(
                                     context,
@@ -192,6 +150,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
               ],
             ),
           ),
+
           // Sesiones Tab
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -199,7 +158,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                 ? const Center(
                     child: Text(
                       'Sin sesiones registradas',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Colors.white70),
                     ),
                   )
                 : state.loading
@@ -208,21 +167,21 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                         itemCount: state.sessions.length,
                         itemBuilder: (context, index) {
                           final Session s = state.sessions[index];
-                          final dateStr = s.date
-                              .toLocal()
-                              .toString()
-                              .split(' ')[0];
+                          final dateStr = s.date.toLocal().toString().split(' ')[0];
                           return Card(
-                            color: const Color(0xFF1E1E1E),
+                            color: cardColor,
                             margin: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: ListTile(
                               title: Text(
                                 'Fecha: $dateStr',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               subtitle: Text(
-                                'Duración: ${s.duration} min - Notas: ${s.notes ?? '-'}',
-                                style: const TextStyle(color: Colors.grey),
+                                'Duración: ${s.duration} min\nNotas: ${s.notes ?? '-'}',
+                                style: const TextStyle(color: Colors.white60),
                               ),
                             ),
                           );
@@ -230,6 +189,54 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2233),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2233),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButton<String>(
+        dropdownColor: const Color(0xFF1B2233),
+        isExpanded: true,
+        value: _level,
+        iconEnabledColor: Colors.white,
+        style: const TextStyle(color: Colors.white),
+        underline: const SizedBox(),
+        items: const [
+          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
+          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
+          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+        ],
+        onChanged: (v) {
+          if (v != null) setState(() => _level = v);
+        },
       ),
     );
   }
