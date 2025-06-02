@@ -18,7 +18,7 @@ class VitalrackApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Vitalrack',
+      title: 'VitalRack',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const AuthWrapper(),
       routes: {
