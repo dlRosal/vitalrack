@@ -1,4 +1,3 @@
-// lib/screens/session_log_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/routine.dart';
@@ -21,9 +20,8 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
   @override
   void initState() {
     super.initState();
-    _weightControllers = widget.routine.exercises
-        .map((_) => TextEditingController())
-        .toList();
+    _weightControllers =
+        widget.routine.exercises.map((_) => TextEditingController()).toList();
   }
 
   @override
@@ -48,9 +46,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     final entries = <Map<String, dynamic>>[];
     for (var i = 0; i < widget.routine.exercises.length; i++) {
       final ex = widget.routine.exercises[i];
-      final weight = double.tryParse(
-        _weightControllers[i].text.trim(),
-      );
+      final weight = double.tryParse(_weightControllers[i].text.trim());
       if (weight == null || weight < 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Peso válido para "${ex.name}"')),
@@ -65,10 +61,12 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
       });
     }
 
-    await ref
-        .read(trainingProvider.notifier)
-        .logSession(widget.routine.id, duration, entries,
-            notes: _notesController.text.trim());
+    await ref.read(trainingProvider.notifier).logSession(
+          widget.routine.id,
+          duration,
+          entries,
+          notes: _notesController.text.trim(),
+        );
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -81,42 +79,54 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
 
+    final bgColor = const Color(0xFF0C0F1A);
+    final accent = const Color(0xFF2196F3);
+
     return Scaffold(
-      appBar: AppBar(title: Text('Log Sesión: ${widget.routine.name}')),
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(
+          'Log Sesión: ${widget.routine.name}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            TextField(
+            _buildInputField(
               controller: _durationController,
+              label: 'Duración (minutos)',
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Duración (minutos)',
-              ),
             ),
             const SizedBox(height: 12),
             ...List.generate(widget.routine.exercises.length, (i) {
               final ex = widget.routine.exercises[i];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TextField(
-                  controller: _weightControllers[i],
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    labelText: '${ex.name} (${ex.sets}×${ex.reps}) Peso (kg)',
-                  ),
-                ),
+              return _buildInputField(
+                controller: _weightControllers[i],
+                label:
+                    '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               );
             }),
-            TextField(
+            _buildInputField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notas (opcional)'),
+              label: 'Notas (opcional)',
               maxLines: 2,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: state.loading ? null : _saveSession,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: state.loading
                   ? const SizedBox(
                       width: 24,
@@ -126,9 +136,43 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Registrar Sesión'),
+                  : const Text(
+                      'Registrar Sesión',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2233),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(
+              vertical: 14, horizontal: 16),
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          border: InputBorder.none,
         ),
       ),
     );
