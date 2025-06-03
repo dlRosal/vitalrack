@@ -53,7 +53,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           children: [
             const SizedBox(height: 70),
-            // LOGO ARRIBA DEL TODO
             Image.asset(
               'assets/logosinfondo.png',
               height: 250,
