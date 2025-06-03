@@ -230,9 +230,9 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
         style: const TextStyle(color: Colors.white),
         underline: const SizedBox(),
         items: const [
-          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
-          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
-          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+          DropdownMenuItem(value: 'beginner', child: Text('Principiante')),
+          DropdownMenuItem(value: 'intermediate', child: Text('Intermedio')),
+          DropdownMenuItem(value: 'advanced', child: Text('Avanzado')),
         ],
         onChanged: (v) {
           if (v != null) setState(() => _level = v);
