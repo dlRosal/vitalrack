@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
-//actualizadp
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -9,9 +9,13 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  // Para animación botones
+  double _loginScale = 1.0;
+  double _registerScale = 1.0;
 
   @override
   void dispose() {
@@ -42,9 +46,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  InputDecoration _inputDecoration(String label, bool isFocused) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.grey),
+      filled: true,
+      fillColor: const Color(0xFF2A2A2A),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final emailFocus = FocusNode();
+    final passwordFocus = FocusNode();
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -59,7 +86,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 32),
 
-            // CONTENEDOR PRINCIPAL
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -81,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Login | Register',
+                    'Iniciar Sesión | Registrarse',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -91,94 +117,119 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  TextField(
-                    controller: _emailController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: const Color(0xFF2A2A2A),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                    ),
+
+                  Focus(
+                    child: Builder(builder: (context) {
+                      final hasFocus = Focus.of(context).hasFocus;
+                      return TextField(
+                        controller: _emailController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _inputDecoration('Email', hasFocus),
+                        keyboardType: TextInputType.emailAddress,
+                      );
+                    }),
                   ),
+
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: const Color(0xFF2A2A2A),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                    ),
+
+                  Focus(
+                    child: Builder(builder: (context) {
+                      final hasFocus = Focus.of(context).hasFocus;
+                      return TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _inputDecoration('Contraseña', hasFocus),
+                      );
+                    }),
                   ),
+
                   const SizedBox(height: 24),
+
                   if (authState.loading) ...[
-                    const CircularProgressIndicator(color: Colors.white),
+                    const Center(child: CircularProgressIndicator(color: Colors.white)),
                     const SizedBox(height: 20),
                   ],
+
                   if (authState.error != null) ...[
                     Text(
                       authState.error!,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                   ],
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
-                        onPressed: authState.loading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2F855A),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 1.1,
-                            color: Colors.white,
+                      GestureDetector(
+                        onTapDown: (_) => setState(() => _loginScale = 0.95),
+                        onTapUp: (_) async {
+                          setState(() => _loginScale = 1.0);
+                          if (!authState.loading) await _login();
+                        },
+                        onTapCancel: () => setState(() => _loginScale = 1.0),
+                        child: AnimatedScale(
+                          scale: _loginScale,
+                          duration: const Duration(milliseconds: 100),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2F855A),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.greenAccent.withOpacity(0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              'Iniciar Sesión',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                letterSpacing: 1.1,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: authState.loading ? null : _register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2C5282),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Register',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 1.1,
-                            color: Colors.white,
+                      GestureDetector(
+                        onTapDown: (_) => setState(() => _registerScale = 0.95),
+                        onTapUp: (_) async {
+                          setState(() => _registerScale = 1.0);
+                          if (!authState.loading) await _register();
+                        },
+                        onTapCancel: () => setState(() => _registerScale = 1.0),
+                        child: AnimatedScale(
+                          scale: _registerScale,
+                          duration: const Duration(milliseconds: 100),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2C5282),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blueAccent.withOpacity(0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              'Registrarse',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                letterSpacing: 1.1,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),

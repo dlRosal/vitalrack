@@ -17,15 +17,14 @@ class HomeScreen extends StatelessWidget {
                 height: 250,
                 child: Image.asset('assets/logosinfondo.png'),
               ),
-
               const SizedBox(height: 32),
               const Text(
                 'Bienvenido a Vitalrack',
-                style:  TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFE0E0E0),
-                  letterSpacing: 1.2,
+                  // Sin sombras ni efectos
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -59,57 +58,74 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required String route,
   }) {
-    Color backgroundColor = color.withOpacity(0.15);
     Color borderColor = color.withOpacity(0.6);
     Color iconColor = color;
 
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.7),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        splashColor: color.withOpacity(0.3),
+        highlightColor: color.withOpacity(0.15),
+        onTap: () => Navigator.pushNamed(context, route),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1E1E1E),
+                const Color(0xFF1C1C1C),
+                color.withOpacity(0.05),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: backgroundColor,
-                border: Border.all(color: borderColor, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+            border: Border.all(
+              color: borderColor.withOpacity(0.5),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.6),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-              alignment: Alignment.center,
-              child: Icon(icon, size: 36, color: iconColor),
-            ),
-            const SizedBox(width: 24),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              BoxShadow(
+                color: color.withOpacity(0.15),
+                blurRadius: 30,
+                offset: const Offset(0, 0),
               ),
-            ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
-          ],
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: borderColor, width: 2),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 36, color: iconColor),
+              ),
+              const SizedBox(width: 24),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  // Sin sombras ni efectos para texto también más básico
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
+            ],
+          ),
         ),
       ),
     );
