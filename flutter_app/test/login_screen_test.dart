@@ -23,10 +23,18 @@ class FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   }
 
   @override
-  void logout() {
+  Future<void> logout() async {
+    await Future.delayed(const Duration(milliseconds: 100));
     state = AuthState();
   }
+
+  @override
+  Future<void> fetchMe() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    state = state.copyWith(token: 'fake-token');
+  }
 }
+
 
 void main() {
   group('LoginScreen Widget Tests', () {
