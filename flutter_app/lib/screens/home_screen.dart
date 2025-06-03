@@ -14,14 +14,14 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 250, // o prueba 200 si quieres aún más grande
+                height: 250,
                 child: Image.asset('assets/logosinfondo.png'),
               ),
 
               const SizedBox(height: 32),
-              Text(
+              const Text(
                 'Bienvenido a Vitalrack',
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFE0E0E0),
