@@ -52,11 +52,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const SizedBox(height: 48),
+            const SizedBox(height: 70),
             // LOGO ARRIBA DEL TODO
             Image.asset(
               'assets/logosinfondo.png',
-              height: 120,
+              height: 250,
             ),
             const SizedBox(height: 32),
 

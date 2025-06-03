@@ -14,9 +14,10 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 100,
-                child: Image.asset('assets/logo.png'),
+                height: 250, // o prueba 200 si quieres aún más grande
+                child: Image.asset('assets/logosinfondo.png'),
               ),
+
               const SizedBox(height: 32),
               Text(
                 'Bienvenido a Vitalrack',
