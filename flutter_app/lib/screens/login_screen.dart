@@ -70,8 +70,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final emailFocus = FocusNode();
-    final passwordFocus = FocusNode();
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
