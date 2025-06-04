@@ -105,7 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Iniciar Sesión | Registrarse',
+                    'Accede a Vitalrack',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
