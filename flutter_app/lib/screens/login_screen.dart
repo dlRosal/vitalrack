@@ -9,22 +9,20 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Para animación botones
   double _loginScale = 1.0;
   double _registerScale = 1.0;
 
-  // Para animación de aparición del formulario
   double _formOpacity = 0;
   Offset _formOffset = const Offset(0, 0.1);
 
   @override
   void initState() {
     super.initState();
-    // Delay para animación de aparición del formulario
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         _formOpacity = 1;
@@ -90,15 +88,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
         child: Column(
           children: [
-            const SizedBox(height: 70),
+            const SizedBox(height: 40),
             Image.asset(
               'assets/logosinfondo.png',
-              height: 250,
+              height: 180, // Reducido
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16), // Reducido
 
             AnimatedOpacity(
               opacity: _formOpacity,
@@ -109,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOut,
                 child: Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(20),
@@ -135,10 +133,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2,
-                          fontSize: 20,
+                          fontSize: 18,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       Focus(
                         child: Builder(builder: (context) {
@@ -166,7 +164,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                         }),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       if (authState.loading) ...[
                         const Center(child: CircularProgressIndicator(color: Colors.white)),
@@ -185,78 +183,92 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                             : const SizedBox.shrink(key: ValueKey('no-error')),
                       ),
 
-                      if (authState.error != null) const SizedBox(height: 20),
+                      if (authState.error != null) const SizedBox(height: 16),
 
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          GestureDetector(
-                            onTapDown: (_) => setState(() => _loginScale = 0.95),
-                            onTapUp: (_) async {
-                              setState(() => _loginScale = 1.0);
-                              if (!authState.loading) await _login();
-                            },
-                            onTapCancel: () => setState(() => _loginScale = 1.0),
-                            child: AnimatedScale(
-                              scale: _loginScale,
-                              duration: const Duration(milliseconds: 100),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: _loginScale < 1.0 ? Colors.green[700] : const Color(0xFF2F855A),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.greenAccent.withOpacity(_loginScale < 1.0 ? 0.6 : 0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
+                          Expanded(
+                            child: GestureDetector(
+                              onTapDown: (_) => setState(() => _loginScale = 0.95),
+                              onTapUp: (_) async {
+                                setState(() => _loginScale = 1.0);
+                                if (!authState.loading) await _login();
+                              },
+                              onTapCancel: () => setState(() => _loginScale = 1.0),
+                              child: AnimatedScale(
+                                scale: _loginScale,
+                                duration: const Duration(milliseconds: 100),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _loginScale < 1.0
+                                        ? Colors.green[700]
+                                        : const Color(0xFF2F855A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.greenAccent.withOpacity(
+                                            _loginScale < 1.0 ? 0.6 : 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Iniciar Sesión',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        letterSpacing: 1.1,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'Iniciar Sesión',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    letterSpacing: 1.1,
-                                    color: Colors.white,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          GestureDetector(
-                            onTapDown: (_) => setState(() => _registerScale = 0.95),
-                            onTapUp: (_) async {
-                              setState(() => _registerScale = 1.0);
-                              if (!authState.loading) await _register();
-                            },
-                            onTapCancel: () => setState(() => _registerScale = 1.0),
-                            child: AnimatedScale(
-                              scale: _registerScale,
-                              duration: const Duration(milliseconds: 100),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: _registerScale < 1.0 ? Colors.blue[700] : const Color(0xFF2C5282),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blueAccent.withOpacity(_registerScale < 1.0 ? 0.6 : 0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: GestureDetector(
+                              onTapDown: (_) => setState(() => _registerScale = 0.95),
+                              onTapUp: (_) async {
+                                setState(() => _registerScale = 1.0);
+                                if (!authState.loading) await _register();
+                              },
+                              onTapCancel: () => setState(() => _registerScale = 1.0),
+                              child: AnimatedScale(
+                                scale: _registerScale,
+                                duration: const Duration(milliseconds: 100),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _registerScale < 1.0
+                                        ? Colors.blue[700]
+                                        : const Color(0xFF2C5282),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blueAccent.withOpacity(
+                                            _registerScale < 1.0 ? 0.6 : 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Registrarse',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        letterSpacing: 1.1,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'Registrarse',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    letterSpacing: 1.1,
-                                    color: Colors.white,
                                   ),
                                 ),
                               ),

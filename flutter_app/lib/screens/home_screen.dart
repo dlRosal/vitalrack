@@ -25,15 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Image.asset('assets/logosinfondo.png'),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Bienvenido a Vitalrack',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFE0E0E0),
-                ),
-                textAlign: TextAlign.center,
-              ),
               const SizedBox(height: 40),
               _buildOptionCard(
                 context,
