@@ -1,10 +1,14 @@
+// lib/screens/profile_screen.dart
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../models/user.dart';
 import '../providers/auth_provider.dart';
+import 'edit_profile_screen.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -24,6 +28,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (pickedFile != null) {
       setState(() {
         _pickedImage = File(pickedFile.path);
+        // Nota: si quieres subirla al servidor, deberías
+        // implementar aquí la llamada a algún endpoint /upload-avatar.
       });
     }
   }
@@ -35,6 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isLoading = authState.loading;
     final token = authState.token;
 
+    // Si no hay token o usuario cargado, redirigimos a Login
     if (token == null || user == null) {
       Future.microtask(() {
         Navigator.of(context).pushReplacement(
@@ -55,8 +62,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         shadowColor: Colors.black.withOpacity(0.5),
         title: const Text(
           'Mi Perfil',
-          style: TextStyle(
-              color: Colors.tealAccent, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -73,9 +79,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700), // Limita ancho máximo en escritorio
+          constraints: const BoxConstraints(maxWidth: 700),
           child: isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.tealAccent))
               : Padding(
                   padding: const EdgeInsets.all(16),
                   child: ListView(
@@ -96,12 +103,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor: const Color(0xFF263238),
-                            backgroundImage:
-                                _pickedImage != null ? FileImage(_pickedImage!) : null,
+                            backgroundImage: _pickedImage != null
+                                ? FileImage(_pickedImage!)
+                                : null,
                             child: _pickedImage == null
                                 ? Text(
-                                    user.name != null && user.name!.isNotEmpty
-                                        ? user.name![0].toUpperCase()
+                                    // Si el usuario no tiene nombre, muestro la primera letra del email
+                                    user.username.isNotEmpty
+                                        ? user.username[0].toUpperCase()
                                         : user.email[0].toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: 40,
@@ -116,22 +125,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 24),
                       _buildInfoTile(
                         'Usuario',
-                        user.name != null && user.name!.isNotEmpty ? user.name! : '—',
+                        user.username.isNotEmpty ? user.username : '—',
                       ),
                       _buildInfoTile('Correo electrónico', user.email),
                       _buildInfoTile('Género', user.gender ?? '—'),
                       _buildInfoTile(
-                        'Edad',
-                        user.age != null ? '${user.age} años' : '—',
-                      ),
+                          'Edad', user.age != null ? '${user.age} años' : '—'),
+                      _buildInfoTile('Altura',
+                          user.height != null ? '${user.height} cm' : '—'),
                       _buildInfoTile(
-                        'Altura',
-                        user.height != null ? '${user.height} cm' : '—',
-                      ),
-                      _buildInfoTile(
-                        'Peso',
-                        user.weight != null ? '${user.weight} kg' : '—',
-                      ),
+                          'Peso', user.weight != null ? '${user.weight} kg' : '—'),
                       const SizedBox(height: 32),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit, color: Colors.black),
@@ -148,8 +151,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           elevation: 8,
                           shadowColor: Colors.tealAccent.withOpacity(0.6),
                         ),
-                        onPressed: () {
-                          // Navegar a edición
+                        onPressed: () async {
+                          // Navegamos a edición, pasando el usuario actual
+                          final updatedUser = await Navigator.push<User>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditProfileScreen(initialUser: user),
+                            ),
+                          );
+                          // Si volvió un usuario actualizado, recargamos el estado
+                          if (updatedUser != null) {
+                            await ref.read(authProvider.notifier).loadUser();
+                          }
                         },
                       ),
                     ],

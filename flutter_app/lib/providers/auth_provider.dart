@@ -1,135 +1,132 @@
-// flutter_app/lib/providers/auth_provider.dart
+// lib/providers/auth_provider.dart
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart';
 import '../models/user.dart';
+import '../services/auth_service.dart';
 
-/// Estado que contiene token y objeto UserData
-class AuthState {
-  final String? token;
-  final bool loading;
-  final String? error;
-  final User? user;
-
-  AuthState({this.token, this.loading = false, this.error, this.user});
-
-  AuthState copyWith({
-    String? token,
-    bool? loading,
-    String? error,
-    User? user,
-  }) {
-    return AuthState(
-      token: token ?? this.token,
-      loading: loading ?? this.loading,
-      error: error,
-      user: user ?? this.user,
-    );
-  }
-}
-
-/// Instance of AuthService
+/// Provee la instancia de AuthService
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
 });
 
-/// El StateNotifier que maneja login, register, fetchMe y logout
+/// Estado de autenticación: token, usuario, carga y error
+class AuthState {
+  final String? token;
+  final User? user;
+  final bool loading;
+  final String? error;
+
+  AuthState({
+    this.token,
+    this.user,
+    this.loading = false,
+    this.error,
+  });
+
+  AuthState copyWith({
+    String? token,
+    User? user,
+    bool? loading,
+    String? error,
+  }) {
+    return AuthState(
+      token: token ?? this.token,
+      user: user ?? this.user,
+      loading: loading ?? this.loading,
+      error: error,
+    );
+  }
+}
+
+/// Notifier que maneja login, registro, logout y carga del perfil
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _service;
-  SharedPreferences? _prefs;
+  AuthNotifier(this._service) : super(AuthState());
 
-  AuthNotifier(this._service) : super(AuthState()) {
-    _loadTokenFromPrefs();
-  }
-
-  Future<void> _loadTokenFromPrefs() async {
-    _prefs = await SharedPreferences.getInstance();
-    final savedToken = _prefs?.getString('auth_token');
-    if (savedToken != null && savedToken.isNotEmpty) {
-      state = state.copyWith(token: savedToken);
-      await fetchMe();
+  /// Guarda el token y carga los datos del usuario
+  Future<void> _saveTokenAndLoadUser(String token) async {
+    state = state.copyWith(token: token, loading: true, error: null);
+    try {
+      final user = await _service.getProfile(token);
+      state = state.copyWith(user: user, loading: false, token: token);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
     }
   }
 
-  Future<void> _saveToken(String token) async {
-    await _prefs?.setString('auth_token', token);
-  }
-
-  Future<void> _clearToken() async {
-    await _prefs?.remove('auth_token');
-  }
-
+  /// Llama al endpoint de login, guarda token y carga usuario
   Future<void> login(String email, String password) async {
     state = state.copyWith(loading: true, error: null);
     try {
       final token = await _service.login(email: email, password: password);
-      state = state.copyWith(token: token, loading: false);
-      await _saveToken(token);
-      await fetchMe();
+      await _saveTokenAndLoadUser(token);
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        loading: false,
-        token: null,
-        user: null,
-      );
+      state = state.copyWith(error: e.toString(), loading: false);
     }
   }
 
+  /// Llama al endpoint de registro, guarda token y carga usuario
   Future<void> register(String email, String password) async {
     state = state.copyWith(loading: true, error: null);
     try {
       final token = await _service.register(email: email, password: password);
-      state = state.copyWith(token: token, loading: false);
-      await _saveToken(token);
-      await fetchMe();
+      await _saveTokenAndLoadUser(token);
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        loading: false,
-        token: null,
-        user: null,
-      );
+      state = state.copyWith(error: e.toString(), loading: false);
     }
   }
 
-  Future<void> fetchMe() async {
-    final currentToken = state.token;
-    if (currentToken == null) return;
+  /// Limpia token y usuario al hacer logout
+  Future<void> logout() async {
+    state = AuthState();
+  }
+
+  /// Refresca los datos del usuario desde el backend
+  Future<void> loadUser() async {
+    final token = state.token;
+    if (token == null) return;
+    state = state.copyWith(loading: true, error: null);
+    try {
+      final user = await _service.getProfile(token);
+      state = state.copyWith(user: user, loading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
+    }
+  }
+
+  /// Permite actualizar el perfil y recargar el usuario
+  Future<void> updateProfile({
+    String? username,
+    String? gender,
+    int? age,
+    double? height,
+    double? weight,
+  }) async {
+    final token = state.token;
+    if (token == null) {
+      state = state.copyWith(error: 'No autenticado');
+      return;
+    }
 
     state = state.copyWith(loading: true, error: null);
     try {
-      final userData = await _service.getProfile(token: currentToken);
-      state = state.copyWith(user: userData, loading: false);
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        loading: false,
-        token: null,
-        user: null,
+      final updatedUser = await _service.updateProfile(
+        token: token,
+        username: username,
+        gender: gender,
+        age: age,
+        height: height,
+        weight: weight,
       );
-      await _clearToken();
+      state = state.copyWith(user: updatedUser, loading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
     }
-  }
-
-  Future<void> logout() async {
-    state = AuthState();
-    await _clearToken();
   }
 }
 
-/// Provider principal
+/// Provider de AuthNotifier
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final service = ref.watch(authServiceProvider);
-  return AuthNotifier(service);
-});
-
-/// Provider que expone solo el token (String?)
-final tokenProvider = Provider<String?>((ref) {
-  return ref.watch(authProvider).token;
-});
-
-/// Provider que expone solo el objeto User?
-final userProvider = Provider<User?>((ref) {
-  return ref.watch(authProvider).user;
+  final svc = ref.watch(authServiceProvider);
+  return AuthNotifier(svc);
 });

@@ -4,6 +4,7 @@ import UserModel from '../models/User';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import mongoose from 'mongoose';
+import { requireAuth, AuthRequest } from '../middlewares/auth'; // <-- asegúrate de tener este middleware
 
 const router = express.Router();
 
@@ -31,7 +32,6 @@ router.post(
     .isLength({ min: 6 })
     .withMessage('La contraseña debe tener al menos 6 caracteres'),
   async (req: Request, res: Response, next: NextFunction) => {
-    // 1) Revisar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -39,17 +39,13 @@ router.post(
 
     try {
       const { email, password } = req.body;
-
-      // 2) Normalizar email (minusculas y sin espacios)
       const normalizedEmail = (email as string).trim().toLowerCase();
 
-      // 3) Comprobar si ya existe un usuario con ese email
       const exists = await UserModel.findOne({ email: normalizedEmail });
       if (exists) {
         return res.status(409).json({ msg: 'Ese email ya está en uso' });
       }
 
-      // 4) Crear el usuario (el hashing de la contraseña se hace en el pre-save del esquema)
       const user = new UserModel({
         email: normalizedEmail,
         password: password.trim(),
@@ -58,19 +54,16 @@ router.post(
 
       console.log('Usuario registrado:', user._id, 'en base', mongoose.connection.name);
 
-      // 5) Firmar y devolver JWT
       const token = signToken(user._id.toString());
       return res.status(201).json({ token });
-    } catch (err: unknown) {
-      // Si ocurre un error de índice único (duplicate key), capturarlo:
-      // p.ej. si dos peticiones simultáneas intentan registrar el mismo email
-      // y salta un E11000 duplicate key error.
+    } catch (err) {
       if (
-        err &&
         typeof err === 'object' &&
+        err !== null &&
         'code' in err &&
-        (err as { code: number }).code === 11000
+        (err as { code?: number }).code === 11000
       ) {
+        // Duplicate key (email ya registrado simultáneamente)
         return res.status(409).json({ msg: 'Ese email ya está en uso' });
       }
       next(err);
@@ -80,14 +73,12 @@ router.post(
 
 /**
  * ─── POST /auth/login ───────────────────────────────────────────────────────────
- * Valida que `email` sea un email y que `password` no esté vacío.
  */
 router.post(
   '/login',
   body('email').isEmail().withMessage('Email inválido'),
   body('password').notEmpty().withMessage('La contraseña no puede estar vacía'),
   async (req: Request, res: Response, next: NextFunction) => {
-    // 1) Revisar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -97,19 +88,16 @@ router.post(
       const { email, password } = req.body;
       const normalizedEmail = (email as string).trim().toLowerCase();
 
-      // 2) Buscar el usuario por email
       const user = await UserModel.findOne({ email: normalizedEmail });
       if (!user) {
         return res.status(401).json({ msg: 'Email o contraseña incorrectos' });
       }
 
-      // 3) Comparar contraseña usando comparePassword (método del esquema)
       const match = await user.comparePassword(password.trim());
       if (!match) {
         return res.status(401).json({ msg: 'Email o contraseña incorrectos' });
       }
 
-      // 4) Firmar y devolver JWT
       const token = signToken(user._id.toString());
       return res.json({ token });
     } catch (err) {
@@ -120,44 +108,82 @@ router.post(
 
 /**
  * ─── GET /auth/me ───────────────────────────────────────────────────────────────
- * Requiere cabecera Authorization: Bearer <token>
- * Devuelve los datos del usuario (sin la contraseña).
  */
-router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ msg: 'No estás autenticado' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    let payload: { id: string };
+router.get(
+  '/me',
+  requireAuth, // middleware que extrae req.userId basado en el JWT
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      payload = jwt.verify(token, JWT_SECRET) as { id: string };
-    } catch {
-      return res.status(401).json({ msg: 'Token inválido' });
+      const userId = req.userId!;
+      const user = await UserModel.findById(userId).select('-password');
+      if (!user) {
+        return res.status(404).json({ msg: 'Usuario no encontrado' });
+      }
+      return res.json({ user });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+/**
+ * ─── PUT /auth/me ───────────────────────────────────────────────────────────────
+ * Permite al usuario autenticado actualizar username, gender, age, height, weight.
+ */
+router.put(
+  '/me',
+  requireAuth,
+  body('username').optional().isString(),
+  body('gender').optional().isString(),
+  body('age').optional().isInt({ min: 0 }),
+  body('height').optional().isFloat({ min: 0 }),
+  body('weight').optional().isFloat({ min: 0 }),
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
     }
 
-    // 1) Obtener el usuario de la base de datos (sin la contraseña)
-    const userId = payload.id;
-    const user = await UserModel.findById(userId).select('-password');
-    if (!user) {
-      return res.status(404).json({ msg: 'Usuario no encontrado' });
-    }
+    try {
+      const userId = req.userId!;
+      const { username, gender, age, height, weight } = req.body;
+      const updateData: Partial<{
+        username: string;
+        gender: string;
+        age: number;
+        height: number;
+        weight: number;
+      }> = {};
 
-    return res.json({ user });
-  } catch (err) {
-    next(err);
-  }
-});
+      if (username !== undefined) updateData.username = username.trim();
+      if (gender !== undefined) updateData.gender = gender.trim();
+      if (age !== undefined) updateData.age = age;
+      if (height !== undefined) updateData.height = height;
+      if (weight !== undefined) updateData.weight = weight;
+
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true, runValidators: true },
+      ).select('-password');
+
+      if (!updatedUser) {
+        return res.status(404).json({ msg: 'Usuario no encontrado' });
+      }
+
+      return res.json({ user: updatedUser });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 /**
  * ─── POST /auth/logout ────────────────────────────────────────────────────────────
- * (Opcional, solo para que el cliente simule el logout)
  */
 router.post('/logout', (_req: Request, res: Response) => {
-  // En muchos backends no hace nada, porque el cliente se encarga de descartar el JWT.
   return res.json({ msg: 'Has cerrado sesión' });
 });
 
 export default router;
+export { router as authRouter };
