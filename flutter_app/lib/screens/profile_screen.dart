@@ -71,87 +71,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           )
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: ListView(
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.tealAccent.withOpacity(0.4),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700), // Limita ancho máximo en escritorio
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ListView(
+                    children: [
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.tealAccent.withOpacity(0.4),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
-                        ],
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: const Color(0xFF263238),
+                            backgroundImage:
+                                _pickedImage != null ? FileImage(_pickedImage!) : null,
+                            child: _pickedImage == null
+                                ? Text(
+                                    user.name != null && user.name!.isNotEmpty
+                                        ? user.name![0].toUpperCase()
+                                        : user.email[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 40,
+                                      color: Colors.tealAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ),
                       ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: const Color(0xFF263238),
-                        backgroundImage:
-                            _pickedImage != null ? FileImage(_pickedImage!) : null,
-                        child: _pickedImage == null
-                            ? Text(
-                                user.name != null && user.name!.isNotEmpty
-                                    ? user.name![0].toUpperCase()
-                                    : user.email[0].toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 40,
-                                  color: Colors.tealAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : null,
+                      const SizedBox(height: 24),
+                      _buildInfoTile(
+                        'Usuario',
+                        user.name != null && user.name!.isNotEmpty ? user.name! : '—',
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildInfoTile(
-                    'Usuario',
-                    user.name != null && user.name!.isNotEmpty ? user.name! : '—',
-                  ),
-                  _buildInfoTile('Correo electrónico', user.email),
-                  _buildInfoTile('Género', user.gender ?? '—'),
-                  _buildInfoTile(
-                    'Edad',
-                    user.age != null ? '${user.age} años' : '—',
-                  ),
-                  _buildInfoTile(
-                    'Altura',
-                    user.height != null ? '${user.height} cm' : '—',
-                  ),
-                  _buildInfoTile(
-                    'Peso',
-                    user.weight != null ? '${user.weight} kg' : '—',
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.edit, color: Colors.black),
-                    label: const Text(
-                      'Editar Perfil',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.tealAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      _buildInfoTile('Correo electrónico', user.email),
+                      _buildInfoTile('Género', user.gender ?? '—'),
+                      _buildInfoTile(
+                        'Edad',
+                        user.age != null ? '${user.age} años' : '—',
                       ),
-                      elevation: 8,
-                      shadowColor: Colors.tealAccent.withOpacity(0.6),
-                    ),
-                    onPressed: () {
-                      // Navegar a edición
-                    },
+                      _buildInfoTile(
+                        'Altura',
+                        user.height != null ? '${user.height} cm' : '—',
+                      ),
+                      _buildInfoTile(
+                        'Peso',
+                        user.weight != null ? '${user.weight} kg' : '—',
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit, color: Colors.black),
+                        label: const Text(
+                          'Editar Perfil',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.tealAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 8,
+                          shadowColor: Colors.tealAccent.withOpacity(0.6),
+                        ),
+                        onPressed: () {
+                          // Navegar a edición
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+        ),
+      ),
     );
   }
 
