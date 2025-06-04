@@ -9,6 +9,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _hoveredOption;
+  bool _isProfileHovered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,43 +28,81 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline, color: Colors.white),
-            tooltip: 'Ver perfil',
-            onPressed: () {
-              Navigator.pushNamed(context, '/profile');
-            },
+          MouseRegion(
+            onEnter: (_) => setState(() => _isProfileHovered = true),
+            onExit: (_) => setState(() => _isProfileHovered = false),
+            cursor: SystemMouseCursors.click,
+            child: AnimatedScale(
+              scale: _isProfileHovered ? 1.15 : 1.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.elasticOut,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _isProfileHovered ? Colors.white.withOpacity(0.12) : Colors.transparent,
+                  boxShadow: _isProfileHovered
+                      ? [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.2),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.person_outline),
+                  color: Colors.white,
+                  tooltip: 'Ver perfil',
+                  iconSize: 42,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                  splashRadius: 30,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: 200,
-                child: Image.asset('assets/logosinfondo.png'),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: Image.asset('assets/logosinfondo.png'),
+                  ),
+                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
+                  _buildOptionCard(
+                    context,
+                    title: 'Nutrición',
+                    icon: Icons.restaurant_menu_rounded,
+                    color: const Color(0xFF2F855A),
+                    route: '/nutrition',
+                  ),
+                  const SizedBox(height: 20),
+                  _buildOptionCard(
+                    context,
+                    title: 'Entrenamiento',
+                    icon: Icons.fitness_center_rounded,
+                    color: const Color(0xFF2C5282),
+                    route: '/training',
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-              const SizedBox(height: 40),
-              _buildOptionCard(
-                context,
-                title: 'Nutrición',
-                icon: Icons.restaurant_menu_rounded,
-                color: const Color(0xFF2F855A),
-                route: '/nutrition',
-              ),
-              const SizedBox(height: 20),
-              _buildOptionCard(
-                context,
-                title: 'Entrenamiento',
-                icon: Icons.fitness_center_rounded,
-                color: const Color(0xFF2C5282),
-                route: '/training',
-              ),
-            ],
+            ),
           ),
         ),
       ),
