@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? _hoveredOption;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +31,6 @@ class HomeScreen extends StatelessWidget {
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFE0E0E0),
-                  // Sin sombras ni efectos
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -58,73 +64,91 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required String route,
   }) {
-    Color borderColor = color.withOpacity(0.6);
-    Color iconColor = color;
+    final isHovered = _hoveredOption == title;
+    final borderColor = color.withOpacity(0.6);
+    final iconColor = color;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        splashColor: color.withOpacity(0.3),
-        highlightColor: color.withOpacity(0.15),
-        onTap: () => Navigator.pushNamed(context, route),
-        child: Container(
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hoveredOption = title),
+      onExit: (_) => setState(() => _hoveredOption = null),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedScale(
+        scale: isHovered ? 1.04 : 1.0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
+            color: Color.lerp(const Color(0xFF1E1E1E), color.withOpacity(0.12), isHovered ? 1 : 0),
             borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1E1E1E),
-                const Color(0xFF1C1C1C),
-                color.withOpacity(0.05),
-              ],
-            ),
+            gradient: isHovered
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      color.withOpacity(0.15),
+                      color.withOpacity(0.10),
+                      color.withOpacity(0.05),
+                    ],
+                  )
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF1E1E1E),
+                      const Color(0xFF1C1C1C),
+                      color.withOpacity(0.05),
+                    ],
+                  ),
             border: Border.all(
-              color: borderColor.withOpacity(0.5),
+              color: borderColor.withOpacity(isHovered ? 0.8 : 0.5),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.6),
-                blurRadius: 20,
+                color: Colors.black.withOpacity(isHovered ? 0.8 : 0.6),
+                blurRadius: isHovered ? 28 : 20,
                 offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: color.withOpacity(0.15),
-                blurRadius: 30,
+                color: color.withOpacity(isHovered ? 0.3 : 0.15),
+                blurRadius: isHovered ? 40 : 30,
                 offset: const Offset(0, 0),
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderColor, width: 2),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            splashColor: color.withOpacity(0.3),
+            highlightColor: color.withOpacity(0.15),
+            onTap: () => Navigator.pushNamed(context, route),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: borderColor, width: 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 36, color: iconColor),
                 ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: 36, color: iconColor),
-              ),
-              const SizedBox(width: 24),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  // Sin sombras ni efectos para texto también más básico
+                const SizedBox(width: 24),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
-            ],
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
+              ],
+            ),
           ),
         ),
       ),
