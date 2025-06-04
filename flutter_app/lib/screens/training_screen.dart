@@ -86,25 +86,31 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                   onPressed: state.loading ? null : _generate,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    elevation: 10,
+                    shadowColor: Colors.blueAccent.withOpacity(0.4),
                   ),
                   child: state.loading
                       ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: 26,
+                          height: 26,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 2.5,
                             color: Colors.white,
                           ),
                         )
                       : const Text(
-                          'Generar Rutina',
+                          'GENERAR RUTINA',
                           style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.1,
+                          ),
                         ),
                 ),
                 const SizedBox(height: 16),
@@ -167,7 +173,8 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                         itemCount: state.sessions.length,
                         itemBuilder: (context, index) {
                           final Session s = state.sessions[index];
-                          final dateStr = s.date.toLocal().toString().split(' ')[0];
+                          final dateStr =
+                              s.date.toLocal().toString().split(' ')[0];
                           return Card(
                             color: cardColor,
                             margin: const EdgeInsets.symmetric(vertical: 6),

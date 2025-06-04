@@ -1,13 +1,35 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  File? _pickedImage;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final isLoading = authState.loading;
@@ -33,7 +55,8 @@ class ProfileScreen extends ConsumerWidget {
         shadowColor: Colors.black.withOpacity(0.5),
         title: const Text(
           'Mi Perfil',
-          style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.tealAccent, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -54,29 +77,36 @@ class ProfileScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: ListView(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.tealAccent.withOpacity(0.4),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: const Color(0xFF263238),
-                      child: Text(
-                        user.name != null && user.name!.isNotEmpty
-                            ? user.name![0].toUpperCase()
-                            : user.email[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          color: Colors.tealAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.tealAccent.withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: const Color(0xFF263238),
+                        backgroundImage:
+                            _pickedImage != null ? FileImage(_pickedImage!) : null,
+                        child: _pickedImage == null
+                            ? Text(
+                                user.name != null && user.name!.isNotEmpty
+                                    ? user.name![0].toUpperCase()
+                                    : user.email[0].toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.tealAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
                       ),
                     ),
                   ),
