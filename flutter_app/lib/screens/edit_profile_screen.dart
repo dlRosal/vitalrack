@@ -54,7 +54,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     final token = ref.read(authProvider).token;
     if (token == null) {
-      // Si no hay token, forzamos logout
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -87,7 +86,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         weight: weight,
       );
 
-      // Al regresar, devolvemos el User actualizado
       Navigator.pop(context, updatedUser);
     } catch (e) {
       setState(() {
@@ -107,99 +105,106 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: const Text('Editar Perfil'),
         backgroundColor: const Color(0xFF1F1F1F),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre de usuario',
-                filled: true,
-                fillColor: Color(0xFF2A2A2A),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _genderController,
-              decoration: const InputDecoration(
-                labelText: 'Género',
-                filled: true,
-                fillColor: Color(0xFF2A2A2A),
-                border: OutlineInputBorder(),
-                hintText: 'Ej: Hombre, Mujer, Otro...',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _ageController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Edad',
-                filled: true,
-                fillColor: Color(0xFF2A2A2A),
-                border: OutlineInputBorder(),
-                hintText: 'Ej: 30',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _heightController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Altura (cm)',
-                filled: true,
-                fillColor: Color(0xFF2A2A2A),
-                border: OutlineInputBorder(),
-                hintText: 'Ej: 175',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Peso (kg)',
-                filled: true,
-                fillColor: Color(0xFF2A2A2A),
-                border: OutlineInputBorder(),
-                hintText: 'Ej: 72.5',
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (_errorMessage != null) ...[
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
-              const SizedBox(height: 12),
-            ],
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _saveChanges,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.tealAccent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              children: [
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre de usuario',
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      'Guardar cambios',
-                      style:
-                          TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _genderController,
+                  decoration: const InputDecoration(
+                    labelText: 'Género',
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                    hintText: 'Ej: Hombre, Mujer, Otro...',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _ageController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Edad',
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                    hintText: 'Ej: 30',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _heightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Altura (cm)',
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                    hintText: 'Ej: 175',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _weightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Peso (kg)',
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                    hintText: 'Ej: 72.5',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_errorMessage != null) ...[
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.tealAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Guardar cambios',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
