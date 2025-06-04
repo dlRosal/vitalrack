@@ -52,7 +52,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Entrenamiento'),
+        title: const Text('ENTRENAMIENTO'),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         bottom: TabBar(
