@@ -49,11 +49,20 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     final cardColor = const Color(0xFF1B2233);
     final accent = const Color(0xFF2196F3);
 
+    // Azul oscuro más claro para el AppBar
+    final appBarBgColor = const Color(0xFF1565C0); // azul oscuro distinto al negro
+
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('ENTRENAMIENTO'),
-        backgroundColor: Colors.black,
+        title: const Text(
+          'ENTRENAMIENTO',
+          style: TextStyle(
+            fontSize: 24, // título un poco más grande
+            fontWeight: FontWeight.bold, // más gordito
+          ),
+        ),
+        backgroundColor: appBarBgColor,
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
