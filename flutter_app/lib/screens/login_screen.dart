@@ -88,15 +88,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20), // reducido de 40 a 20
         child: Column(
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 20), // reducido de 40 a 20
             Image.asset(
               'assets/logosinfondo.png',
               height: 180,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12), // reducido de 16 a 12
 
             AnimatedOpacity(
               opacity: _formOpacity,

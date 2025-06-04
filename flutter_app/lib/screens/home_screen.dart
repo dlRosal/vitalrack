@@ -76,31 +76,34 @@ class _HomeScreenState extends State<HomeScreen> {
             constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: Image.asset('assets/logosinfondo.png'),
-                  ),
-                  const SizedBox(height: 32),
-                  const SizedBox(height: 40),
-                  _buildOptionCard(
-                    context,
-                    title: 'Nutrición',
-                    icon: Icons.restaurant_menu_rounded,
-                    color: const Color(0xFF2F855A),
-                    route: '/nutrition',
-                  ),
-                  const SizedBox(height: 20),
-                  _buildOptionCard(
-                    context,
-                    title: 'Entrenamiento',
-                    icon: Icons.fitness_center_rounded,
-                    color: const Color(0xFF2C5282),
-                    route: '/training',
-                  ),
-                ],
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 150, // un poco más pequeño para subir contenido
+                      child: Image.asset('assets/logosinfondo.png'),
+                    ),
+                    const SizedBox(height: 16), // menos espacio aquí
+                    _buildOptionCard(
+                      context,
+                      title: 'Nutrición',
+                      icon: Icons.restaurant_menu_rounded,
+                      color: const Color(0xFF2F855A),
+                      route: '/nutrition',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildOptionCard(
+                      context,
+                      title: 'Entrenamiento',
+                      icon: Icons.fitness_center_rounded,
+                      color: const Color(0xFF2C5282),
+                      route: '/training',
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
