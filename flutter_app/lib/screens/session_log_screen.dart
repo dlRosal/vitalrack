@@ -80,23 +80,26 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     final state = ref.watch(trainingProvider);
 
     final bgColor = const Color(0xFF0C0F1A);
-    final accent = const Color(0xFF4A90E2); // azul claro oscuro
-    final titleColor = const Color(0xFF7BA9E9); // azul título más claro y elegante
+    final cardColor = const Color(0xFF1B2233);
+    final neonAccent = const Color(0xFF00FFC6);
+    final titleColor = const Color(0xFF80D8FF);
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF0D47A1),
         title: Text(
           'Log Sesión: ${widget.routine.name}',
           style: TextStyle(
             color: titleColor,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
             fontSize: 20,
+            letterSpacing: 1.2,
           ),
         ),
         iconTheme: IconThemeData(color: titleColor),
-        elevation: 3,
+        elevation: 4,
+        shadowColor: neonAccent.withOpacity(0.5),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -107,13 +110,14 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
               label: 'Duración (minutos)',
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             ...List.generate(widget.routine.exercises.length, (i) {
               final ex = widget.routine.exercises[i];
               return _buildInputField(
                 controller: _weightControllers[i],
                 label: '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               );
             }),
             _buildInputField(
@@ -121,17 +125,17 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
               label: 'Notas (opcional)',
               maxLines: 2,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: state.loading ? null : _saveSession,
               style: ElevatedButton.styleFrom(
-                backgroundColor: accent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: neonAccent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                elevation: 4,
-                shadowColor: accent.withOpacity(0.6),
+                elevation: 6,
+                shadowColor: neonAccent.withOpacity(0.7),
               ),
               child: state.loading
                   ? const SizedBox(
@@ -139,15 +143,16 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     )
                   : const Text(
-                      'Registrar Sesión',
+                      '💾 Registrar Sesión',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
+                        letterSpacing: 1.2,
+                        fontSize: 16,
                       ),
                     ),
             ),
@@ -164,15 +169,15 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     int maxLines = 1,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF1B2233),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.cyanAccent.withOpacity(0.25),
+            blurRadius: 8,
             offset: const Offset(0, 3),
-            blurRadius: 6,
           ),
         ],
       ),
@@ -182,9 +187,13 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
         maxLines: maxLines,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: const TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
           border: InputBorder.none,
         ),
       ),

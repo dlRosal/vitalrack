@@ -8,10 +8,11 @@ class RoutineDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFF0C0F1A); // Fondo general oscuro
-    final cardColor = const Color(0xFF1B2233); // Fondo de tarjetas
-    final accent = const Color(0xFF2196F3); // Azul para acento
-    final appBarColor = const Color(0xFF0D47A1); // Azul oscuro para AppBar
+    final bgColor = const Color(0xFF0C0F1A);
+    final cardColor = const Color(0xFF1B2233);
+    final accent = const Color(0xFF2196F3);
+    final appBarColor = const Color(0xFF0D47A1);
+    final glow = Colors.cyanAccent.withOpacity(0.2);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -22,10 +23,12 @@ class RoutineDetailScreen extends StatelessWidget {
             color: Colors.white,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
         backgroundColor: appBarColor,
+        elevation: 6,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
@@ -42,18 +45,31 @@ class RoutineDetailScreen extends StatelessWidget {
                 itemCount: routine.exercises.length,
                 itemBuilder: (context, index) {
                   final ex = routine.exercises[index];
-                  return Card(
-                    color: cardColor,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      color: cardColor,
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: glow,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       leading: CircleAvatar(
+                        radius: 22,
                         backgroundColor: accent,
                         child: Text(
                           '${index + 1}',
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       title: Text(
@@ -61,11 +77,18 @@ class RoutineDetailScreen extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
+                          fontSize: 16,
                         ),
                       ),
-                      subtitle: Text(
-                        'Series: ${ex.sets}  Repeticiones: ${ex.reps}\nDescanso: ${ex.restSec}s',
-                        style: const TextStyle(color: Colors.white70),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Text(
+                          'Series: ${ex.sets}  Repeticiones: ${ex.reps}\nDescanso: ${ex.restSec}s',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            height: 1.4,
+                          ),
+                        ),
                       ),
                     ),
                   );
