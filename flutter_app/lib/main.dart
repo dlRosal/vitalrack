@@ -10,7 +10,9 @@ import 'screens/nutrition_screen.dart';
 import 'screens/training_screen.dart';
 import 'screens/routine_detail_screen.dart';
 import 'screens/session_log_screen.dart';
+import 'screens/session_detail_screen.dart';
 import 'models/routine.dart';
+import 'models/session.dart';
 
 void main() {
   runApp(const ProviderScope(child: VitalrackApp()));
@@ -56,6 +58,12 @@ class VitalrackApp extends ConsumerWidget {
           final args = settings.arguments as Routine;
           return MaterialPageRoute(
             builder: (ctx) => SessionLogScreen(routine: args),
+          );
+        }
+        if (settings.name == '/training/session') {
+          final args = settings.arguments as Session;
+          return MaterialPageRoute(
+            builder: (ctx) => SessionDetailScreen(session: args),
           );
         }
         return null;

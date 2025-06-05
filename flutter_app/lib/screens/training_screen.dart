@@ -23,7 +23,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Al cargar el widget, solicitamos al provider que recupere rutinas y sesiones
+    // Al montar el widget, solicitamos al provider que recupere rutinas y sesiones.
     Future.microtask(() {
       ref.read(trainingProvider.notifier).fetchRoutines();
       ref.read(trainingProvider.notifier).fetchSessions();
@@ -41,13 +41,13 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    // Llamamos al notifier para generar la rutina y luego limpiamos el campo
+    // Llamamos al notifier para generar la rutina y luego limpiamos el campo de texto.
     await ref.read(trainingProvider.notifier).generateRoutine(name, _level);
     _nameController.clear();
   }
 
   Future<void> _addSession() async {
-    // Obtenemos las rutinas disponibles
+    // Obtenemos la lista de rutinas actuales desde el estado.
     final routines = ref.read(trainingProvider).routines;
     if (routines.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,10 +56,10 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       return;
     }
 
-    // Por defecto, seleccionamos la primera rutina de la lista
+    // Por defecto seleccionamos la primera rutina de la lista.
     Routine? selected = routines.first;
 
-    // Abrimos un diálogo para elegir la rutina sobre la que registrar la sesión
+    // Abrimos un diálogo para que el usuario seleccione sobre qué rutina registrar la sesión.
     final Routine? routine = await showDialog<Routine>(
       context: context,
       builder: (ctx) {
@@ -100,7 +100,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       },
     );
 
-    // Si el usuario confirmó una rutina, navegamos a la pantalla de logging
+    // Si el usuario confirma una rutina, navegamos a la pantalla de registro de sesiones.
     if (routine != null && mounted) {
       Navigator.pushNamed(context, '/training/log', arguments: routine);
     }
@@ -362,6 +362,14 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                                 '⏱️ Duración: ${s.duration} min\n📝 Notas: ${s.notes ?? '-'}',
                                 style: const TextStyle(color: Colors.white60),
                               ),
+                              onTap: () {
+                                // Al pulsar una sesión, navegamos a /training/session pasándole la sesión completa
+                                Navigator.pushNamed(
+                                  context,
+                                  '/training/session',
+                                  arguments: s,
+                                );
+                              },
                             ),
                           );
                         },
