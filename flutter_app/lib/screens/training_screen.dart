@@ -1,3 +1,4 @@
+// lib/screens/training_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/training_provider.dart';
@@ -21,6 +22,8 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Al cargar el widget, solicitamos al provider que recupere rutinas y sesiones
     Future.microtask(() {
       ref.read(trainingProvider.notifier).fetchRoutines();
       ref.read(trainingProvider.notifier).fetchSessions();
@@ -37,8 +40,70 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
   Future<void> _generate() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+
+    // Llamamos al notifier para generar la rutina y luego limpiamos el campo
     await ref.read(trainingProvider.notifier).generateRoutine(name, _level);
     _nameController.clear();
+  }
+
+  Future<void> _addSession() async {
+    // Obtenemos las rutinas disponibles
+    final routines = ref.read(trainingProvider).routines;
+    if (routines.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Primero crea una rutina')),
+      );
+      return;
+    }
+
+    // Por defecto, seleccionamos la primera rutina de la lista
+    Routine? selected = routines.first;
+
+    // Abrimos un diálogo para elegir la rutina sobre la que registrar la sesión
+    final Routine? routine = await showDialog<Routine>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Selecciona rutina'),
+              content: DropdownButton<Routine>(
+                value: selected,
+                isExpanded: true,
+                items: routines
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(r.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selected = value);
+                  }
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, selected),
+                  child: const Text('Aceptar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    // Si el usuario confirmó una rutina, navegamos a la pantalla de logging
+    if (routine != null && mounted) {
+      Navigator.pushNamed(context, '/training/log', arguments: routine);
+    }
   }
 
   @override
@@ -52,7 +117,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     );
 
     final cardColor = const Color(0xFF101521);
-    final accentColor = const Color(0xFF1E88E5); // Más oscuro y menos brillante
+    final accentColor = const Color(0xFF1E88E5);
     final appBarColor = const Color(0xFF0A1123);
 
     return Scaffold(
@@ -142,54 +207,59 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Campo de texto para el nombre de la nueva rutina
           _buildInputField(controller: _nameController, label: 'Nombre de la rutina'),
           const SizedBox(height: 12),
+
+          // Dropdown para seleccionar nivel (beginner/intermediate/advanced)
           _buildDropdown(),
           const SizedBox(height: 12),
+
+          // Botón para generar la rutina
           ConstrainedBox(
-  constraints: const BoxConstraints(maxWidth: 240),
-  child: ElevatedButton(
-    onPressed: state.loading ? null : _generate,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF0D1B2A), // Azul muy oscuro
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(
-          color: Color(0xFF00FFFF), // Neón azul cian
-          width: 2,
-        ),
-      ),
-      elevation: 20,
-      shadowColor: const Color(0xFF00FFFF).withOpacity(0.6), // Sombra neón
-    ),
-    child: state.loading
-        ? const SizedBox(
-            width: 26,
-            height: 26,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFFF)),
-            ),
-          )
-        : const Text(
-            'Generar Rutina',
-            style: TextStyle(
-              color: Color(0xFF00FFFF), // Neón cian
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-              shadows: [
-                Shadow(
-                  color: Color(0xFF00FFFF),
-                  blurRadius: 8,
-                  offset: Offset(0, 0),
+            constraints: const BoxConstraints(maxWidth: 240),
+            child: ElevatedButton(
+              onPressed: state.loading ? null : _generate,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D1B2A), // Azul muy oscuro
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: const BorderSide(
+                    color: Color(0xFF00FFFF), // Neón azul cian
+                    width: 2,
+                  ),
                 ),
-              ],
+                elevation: 20,
+                shadowColor: const Color(0xFF00FFFF).withOpacity(0.6),
+              ),
+              child: state.loading
+                  ? const SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFFF)),
+                      ),
+                    )
+                  : const Text(
+                      'Generar Rutina',
+                      style: TextStyle(
+                        color: Color(0xFF00FFFF), // Neón cian
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                        shadows: [
+                          Shadow(
+                            color: Color(0xFF00FFFF),
+                            blurRadius: 8,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ),
-  ),
-),
 
           const SizedBox(height: 16),
           Expanded(
@@ -244,40 +314,61 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
   Widget _buildSessionsTab(state, Color cardColor) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: state.sessions.isEmpty && !state.loading
-          ? const Center(
-              child: Text(
-                '🚫 Sin sesiones registradas',
-                style: TextStyle(color: Colors.white70),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Botón para registrar sesión
+          ElevatedButton.icon(
+            onPressed: _addSession,
+            icon: const Icon(Icons.add),
+            label: const Text('Registrar sesión'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E88E5),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            )
-          : state.loading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: state.sessions.length,
-                  itemBuilder: (context, index) {
-                    final Session s = state.sessions[index];
-                    final dateStr = s.date.toLocal().toString().split(' ')[0];
-                    return Card(
-                      color: cardColor,
-                      elevation: 8,
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: state.sessions.isEmpty && !state.loading
+                ? const Center(
+                    child: Text(
+                      '🚫 Sin sesiones registradas',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  )
+                : state.loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: state.sessions.length,
+                        itemBuilder: (context, index) {
+                          final Session s = state.sessions[index];
+                          final dateStr = s.date.toLocal().toString().split(' ')[0];
+                          return Card(
+                            color: cardColor,
+                            elevation: 8,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                '📅 Fecha: $dateStr',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                '⏱️ Duración: ${s.duration} min\n📝 Notas: ${s.notes ?? '-'}',
+                                style: const TextStyle(color: Colors.white60),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      child: ListTile(
-                        title: Text(
-                          '📅 Fecha: $dateStr',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          '⏱️ Duración: ${s.duration} min\n📝 Notas: ${s.notes ?? '-'}',
-                          style: const TextStyle(color: Colors.white60),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -304,63 +395,63 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     );
   }
 
-Widget _buildDropdown() {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    decoration: BoxDecoration(
-      color: const Color(0xFF1C223A).withOpacity(0.6),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFF1E88E5), width: 1),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          blurRadius: 6,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: _level,
-        isExpanded: true,
-        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-        dropdownColor: const Color(0xFF101521),
-        borderRadius: BorderRadius.circular(12),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        items: [
-          _buildDropdownItem('beginner', 'Principiante'),
-          _buildDropdownItem('intermediate', 'Intermedio'),
-          _buildDropdownItem('advanced', 'Avanzado'),
-        ],
-        onChanged: (value) {
-          if (value != null) {
-            setState(() {
-              _level = value;
-            });
-          }
-        },
-      ),
-    ),
-  );
-}
-
-DropdownMenuItem<String> _buildDropdownItem(String value, String text) {
-  return DropdownMenuItem<String>(
-    value: value,
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+  Widget _buildDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFF1C223A).withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF1E88E5), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _level,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          dropdownColor: const Color(0xFF101521),
+          borderRadius: BorderRadius.circular(12),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          items: [
+            _buildDropdownItem('beginner', 'Principiante'),
+            _buildDropdownItem('intermediate', 'Intermedio'),
+            _buildDropdownItem('advanced', 'Avanzado'),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _level = value;
+              });
+            }
+          },
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  DropdownMenuItem<String> _buildDropdownItem(String value, String text) {
+    return DropdownMenuItem<String>(
+      value: value,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
 }
