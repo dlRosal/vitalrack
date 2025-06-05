@@ -10,15 +10,30 @@ class NutritionScreen extends ConsumerStatefulWidget {
   ConsumerState<NutritionScreen> createState() => _NutritionScreenState();
 }
 
-class _NutritionScreenState extends ConsumerState<NutritionScreen> {
+class _NutritionScreenState extends ConsumerState<NutritionScreen>
+    with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
 
   // Supongamos que el máximo de calorías diarias es 2000 (puedes ajustar)
   static const int maxCalories = 2000;
 
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Controlador para animaciones de brillo y pulso
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -47,10 +62,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     final bgColor = const Color(0xFF0A0F0A);
     final cardColor = const Color(0xFF131E17);
     final accent = const Color(0xFF4CAF50); // Verde vivo
-    final glow = Colors.greenAccent.withOpacity(0.2);
 
     // Obtiene el total de calorías consumidas del estado, o 0 si no existe
-    const totalCaloriesConsumed = 1250;
+    const totalCaloriesConsumed = 1500;
 
     // Calcula el progreso para la barra, limitado a 1.0
     final progress = (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
@@ -85,7 +99,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: glow,
+                          color: Colors.greenAccent.withOpacity(0.2),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -153,8 +167,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
 
             const SizedBox(height: 20),
 
-            if (state.loading)
-              CircularProgressIndicator(color: accent),
+            if (state.loading) CircularProgressIndicator(color: accent),
 
             if (state.error != null)
               Text(
@@ -211,34 +224,166 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
 
             const SizedBox(height: 12),
 
-            // Barra de progreso de calorías consumidas
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Calorías consumidas: $totalCaloriesConsumed / $maxCalories kcal',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 14,
-                    color: accent,
-                    backgroundColor: cardColor.withOpacity(0.4),
-                  ),
-                ),
-              ],
+            // NUEVA BARRA DE CALORÍAS ESPECTACULAR
+            AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                // Para el brillo animado: un valor que va de -1 a 2 para el gradiente animado
+                final animationValue = _animationController.value * 3 - 1;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Calorías consumidas: $totalCaloriesConsumed / $maxCalories kcal',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        letterSpacing: 1,
+                        shadows: [
+                          Shadow(
+                            color: Colors.greenAccent,
+                            blurRadius: 8,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    // Barra con brillo y pulso
+                    Transform.scale(
+                      scale: 1 + 0.05 * (1 - (progress - 0.5).abs() * 2),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: 25,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.grey[800],
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black54,
+                                    offset: Offset(0, 3),
+                                    blurRadius: 5,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Barra de progreso con degradado dinámico
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Container(
+                                  height: 25,
+                                  width: constraints.maxWidth * progress,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    gradient: LinearGradient(
+                                      colors: const [
+                                        Color(0xFF76FF03),
+                                        Color(0xFF64DD17),
+                                        Color(0xFF33691E),
+                                      ],
+                                      stops: const [0.0, 0.7, 1.0],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.greenAccent.withOpacity(0.6),
+                                        blurRadius: 12,
+                                        spreadRadius: 1,
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ShaderMask(
+                                    shaderCallback: (rect) {
+                                      return LinearGradient(
+                                        begin: Alignment(-1 + animationValue, 0),
+                                        end: Alignment(animationValue, 0),
+                                        colors: [
+                                          Colors.white.withOpacity(0.2),
+                                          Colors.white.withOpacity(0.8),
+                                          Colors.white.withOpacity(0.2),
+                                        ],
+                                        stops: const [0.4, 0.5, 0.6],
+                                      ).createShader(rect);
+                                    },
+                                    blendMode: BlendMode.lighten,
+                                    child: Container(
+                                      color: Colors.white.withOpacity(0.15),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            // Partículas de brillo animadas
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: _SparklePainter(
+                                  progress: progress,
+                                  animationValue: animationValue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+// Pintor personalizado para chispas brillantes animadas
+class _SparklePainter extends CustomPainter {
+  final double progress;
+  final double animationValue;
+
+  _SparklePainter({required this.progress, required this.animationValue});
+
+  final _sparklePaint = Paint()
+    ..color = Colors.white.withOpacity(0.8)
+    ..style = PaintingStyle.fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final width = size.width * progress;
+    final height = size.height;
+
+    // Dibujar algunas chispas distribuidas a lo largo de la barra de progreso
+    final sparkleCount = 7;
+    final sparkleRadius = 3.0;
+
+    for (int i = 0; i < sparkleCount; i++) {
+      // Posición x base para cada chispa
+      final baseX = width / sparkleCount * i + sparkleRadius * 2;
+
+      // Desplazamiento horizontal oscilante para la animación de brillo
+      final offsetX = (animationValue * 100) % width;
+
+      final x = (baseX + offsetX) % width;
+
+      final y = height / 2 +
+          (3 * (i.isEven ? 1 : -1)) *
+              (0.5 - (animationValue - i / sparkleCount).abs()).abs();
+
+      // Dibuja círculo brillo
+      canvas.drawCircle(Offset(x, y), sparkleRadius, _sparklePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SparklePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.progress != progress;
   }
 }
