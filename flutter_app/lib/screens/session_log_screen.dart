@@ -81,24 +81,23 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
 
     final bgColor = const Color(0xFF0C0F1A);
     final neonAccent = const Color(0xFF00FFC6);
-    final titleColor = const Color(0xFF80D8FF);
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D47A1),
+        backgroundColor: const Color(0xFF0A2A4A), // Azul oscuro que contrasta
         title: Text(
           'Log Sesión: ${widget.routine.name}',
-          style: TextStyle(
-            color: titleColor,
+          style: const TextStyle(
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
             letterSpacing: 1.2,
           ),
         ),
-        iconTheme: IconThemeData(color: titleColor),
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 4,
-        shadowColor: neonAccent.withOpacity(0.5),
+        shadowColor: Colors.black.withOpacity(0.3),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
