@@ -147,38 +147,50 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           _buildDropdown(),
           const SizedBox(height: 12),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 240),
-            child: ElevatedButton(
-              onPressed: state.loading ? null : _generate,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentColor,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+  constraints: const BoxConstraints(maxWidth: 240),
+  child: ElevatedButton(
+    onPressed: state.loading ? null : _generate,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF0D1B2A), // Azul muy oscuro
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(
+          color: Color(0xFF00FFFF), // Neón azul cian
+          width: 2,
+        ),
+      ),
+      elevation: 20,
+      shadowColor: const Color(0xFF00FFFF).withOpacity(0.6), // Sombra neón
+    ),
+    child: state.loading
+        ? const SizedBox(
+            width: 26,
+            height: 26,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFFF)),
+            ),
+          )
+        : const Text(
+            'Generar Rutina',
+            style: TextStyle(
+              color: Color(0xFF00FFFF), // Neón cian
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              shadows: [
+                Shadow(
+                  color: Color(0xFF00FFFF),
+                  blurRadius: 8,
+                  offset: Offset(0, 0),
                 ),
-                elevation: 10,
-                shadowColor: accentColor.withOpacity(0.4),
-              ),
-              child: state.loading
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text(
-                      'Generar Rutina',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
+              ],
             ),
           ),
+  ),
+),
+
           const SizedBox(height: 16),
           Expanded(
             child: state.routines.isEmpty
