@@ -45,45 +45,61 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
 
-    final bgColor = const Color(0xFF0C0F1A);
-    final cardColor = const Color(0xFF1B2233);
-    final accent = const Color(0xFF2196F3);
-    final appBarBgColor = const Color(0xFF1565C0);
+    final bgGradient = const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF050A1F), Color(0xFF0C0F1A)],
+    );
+
+    final cardColor = const Color(0xFF141A2E);
+    final neonAccent = const Color(0xFF00E5FF);
+    final appBarColor = const Color(0xFF0A112B);
 
     return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        title: const Text(
-          'ENTRENAMIENTO',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: appBarBgColor,
-        foregroundColor: Colors.white,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: AnimatedBuilder(
-            animation: _tabController.animation!,
-            builder: (context, _) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: Container(
+        decoration: BoxDecoration(gradient: bgGradient),
+        child: Column(
+          children: [
+            AppBar(
+              title: const Text(
+                '⚡ ENTRENAMIENTO',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              backgroundColor: appBarColor,
+              foregroundColor: Colors.white,
+              elevation: 8,
+              shadowColor: neonAccent.withOpacity(0.4),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: AnimatedBuilder(
+                  animation: _tabController.animation!,
+                  builder: (context, _) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildTabLabel("Rutinas", 0),
+                        _buildTabLabel("Sesiones", 1),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
                 children: [
-                  _buildTabLabel("Rutinas", 0),
-                  _buildTabLabel("Sesiones", 1),
+                  _buildRoutinesTab(state, cardColor, neonAccent),
+                  _buildSessionsTab(state, cardColor),
                 ],
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildRoutinesTab(state, cardColor, accent),
-          _buildSessionsTab(state, cardColor),
-        ],
       ),
     );
   }
@@ -101,12 +117,18 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           child: Text(
             label,
             style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+              color: selected ? const Color(0xFF00E5FF) : Colors.white70,
+              fontWeight: FontWeight.w700,
               fontSize: selected ? 18 : 16,
-              decoration: selected ? TextDecoration.underline : null,
-              decorationColor: Colors.white,
-              decorationThickness: 2,
+              shadows: selected
+                  ? [
+                      const Shadow(
+                        color: Color(0xFF00E5FF),
+                        blurRadius: 12,
+                        offset: Offset(0, 0),
+                      )
+                    ]
+                  : [],
             ),
           ),
         ),
@@ -120,10 +142,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildInputField(
-            controller: _nameController,
-            label: 'Nombre de la rutina',
-          ),
+          _buildInputField(controller: _nameController, label: 'Nombre de la rutina'),
           const SizedBox(height: 12),
           _buildDropdown(),
           const SizedBox(height: 12),
@@ -135,8 +154,8 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 10,
-              shadowColor: Colors.blueAccent.withOpacity(0.4),
+              elevation: 20,
+              shadowColor: accent.withOpacity(0.5),
             ),
             child: state.loading
                 ? const SizedBox(
@@ -148,12 +167,12 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                     ),
                   )
                 : const Text(
-                    'GENERAR RUTINA',
+                    '⚡ GENERAR RUTINA',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.1,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.3,
                     ),
                   ),
           ),
@@ -162,7 +181,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
             child: state.routines.isEmpty
                 ? const Center(
                     child: Text(
-                      'Sin rutinas creadas',
+                      '🚫 Sin rutinas creadas',
                       style: TextStyle(color: Colors.white70),
                     ),
                   )
@@ -172,14 +191,19 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                       final Routine r = state.routines[index];
                       return Card(
                         color: cardColor,
-                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        elevation: 8,
+                        shadowColor: Colors.cyanAccent.withOpacity(0.3),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                         child: ListTile(
                           title: Text(
                             r.name,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           subtitle: Text(
                             'Ejercicios: ${r.exercises.length}',
@@ -208,7 +232,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       child: state.sessions.isEmpty && !state.loading
           ? const Center(
               child: Text(
-                'Sin sesiones registradas',
+                '🚫 Sin sesiones registradas',
                 style: TextStyle(color: Colors.white70),
               ),
             )
@@ -221,17 +245,18 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                     final dateStr = s.date.toLocal().toString().split(' ')[0];
                     return Card(
                       color: cardColor,
+                      elevation: 8,
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
                         title: Text(
-                          'Fecha: $dateStr',
+                          '📅 Fecha: $dateStr',
                           style: const TextStyle(color: Colors.white),
                         ),
                         subtitle: Text(
-                          'Duración: ${s.duration} min\nNotas: ${s.notes ?? '-'}',
+                          '⏱️ Duración: ${s.duration} min\n📝 Notas: ${s.notes ?? '-'}',
                           style: const TextStyle(color: Colors.white60),
                         ),
                       ),
@@ -247,8 +272,9 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1B2233),
+        color: const Color(0xFF1C223A).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF00E5FF), width: 1),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextField(
@@ -267,11 +293,12 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B2233),
+        color: const Color(0xFF1C223A).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF00E5FF), width: 1),
       ),
       child: DropdownButton<String>(
-        dropdownColor: const Color(0xFF1B2233),
+        dropdownColor: const Color(0xFF1C223A),
         isExpanded: true,
         value: _level,
         iconEnabledColor: Colors.white,
