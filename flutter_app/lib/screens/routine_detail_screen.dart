@@ -8,11 +8,12 @@ class RoutineDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFF0C0F1A);
-    final cardColor = const Color(0xFF1B2233);
-    final accent = const Color(0xFF2196F3);
-    final appBarColor = const Color(0xFF0D47A1);
-    final glow = Colors.cyanAccent.withOpacity(0.2);
+    final bgColor = const Color(0xFF0A0A0F); // Fondo aún más oscuro
+    final cardColor = const Color(0xFF1A1C2D); // Panel de tarjetas
+    final accent = const Color(0xFF00FFAA); // Verde neón
+    final accentSecondary = const Color(0xFF7F00FF); // Morado
+    final glow = accent.withOpacity(0.3); // Efecto neón
+    final appBarColor = const Color(0xFF111322); // AppBar oscura
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -22,13 +23,13 @@ class RoutineDetailScreen extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-            fontSize: 20,
+            letterSpacing: 2,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
         backgroundColor: appBarColor,
-        elevation: 6,
+        elevation: 10,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
@@ -41,7 +42,7 @@ class RoutineDetailScreen extends StatelessWidget {
                 ),
               )
             : ListView.separated(
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
                 itemCount: routine.exercises.length,
                 itemBuilder: (context, index) {
                   final ex = routine.exercises[index];
@@ -49,26 +50,39 @@ class RoutineDetailScreen extends StatelessWidget {
                     duration: const Duration(milliseconds: 300),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: glow, width: 1.5),
                       boxShadow: [
                         BoxShadow(
                           color: glow,
-                          blurRadius: 10,
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      leading: CircleAvatar(
-                        radius: 22,
-                        backgroundColor: accent,
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                          horizontal: 20, vertical: 14),
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: accentSecondary, width: 2),
+                          gradient: LinearGradient(
+                            colors: [accent, accentSecondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),
@@ -76,16 +90,17 @@ class RoutineDetailScreen extends StatelessWidget {
                         ex.name,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 17,
                         ),
                       ),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 6.0),
                         child: Text(
                           'Series: ${ex.sets}  Repeticiones: ${ex.reps}\nDescanso: ${ex.restSec}s',
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: Colors.white70.withOpacity(0.9),
+                            fontSize: 14,
                             height: 1.4,
                           ),
                         ),
