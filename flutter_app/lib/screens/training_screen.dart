@@ -62,7 +62,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           children: [
             AppBar(
               title: const Text(
-                '⚡ ENTRENAMIENTO',
+                'ENTRENAMIENTO',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                       ),
                     )
                   : const Text(
-                      '⚡ Generar Rutina',
+                      'Generar Rutina',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,
@@ -292,30 +292,63 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     );
   }
 
-  Widget _buildDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C223A).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF1E88E5), width: 1),
-      ),
+Widget _buildDropdown() {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFF1C223A).withOpacity(0.6),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0xFF1E88E5), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+    child: DropdownButtonHideUnderline(
       child: DropdownButton<String>(
-        dropdownColor: const Color(0xFF1C223A),
-        isExpanded: true,
         value: _level,
-        iconEnabledColor: Colors.white,
-        style: const TextStyle(color: Colors.white),
-        underline: const SizedBox(),
-        items: const [
-          DropdownMenuItem(value: 'beginner', child: Text('Principiante')),
-          DropdownMenuItem(value: 'intermediate', child: Text('Intermedio')),
-          DropdownMenuItem(value: 'advanced', child: Text('Avanzado')),
+        isExpanded: true,
+        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+        dropdownColor: const Color(0xFF101521),
+        borderRadius: BorderRadius.circular(12),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        items: [
+          _buildDropdownItem('beginner', 'Principiante'),
+          _buildDropdownItem('intermediate', 'Intermedio'),
+          _buildDropdownItem('advanced', 'Avanzado'),
         ],
-        onChanged: (v) {
-          if (v != null) setState(() => _level = v);
+        onChanged: (value) {
+          if (value != null) {
+            setState(() {
+              _level = value;
+            });
+          }
         },
       ),
-    );
-  }
+    ),
+  );
+}
+
+DropdownMenuItem<String> _buildDropdownItem(String value, String text) {
+  return DropdownMenuItem<String>(
+    value: value,
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white),
+      ),
+    ),
+  );
+}
 }
