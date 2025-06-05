@@ -30,7 +30,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.initState();
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
-    _selectedGender = (u.gender == 'male' || u.gender == 'female') ? u.gender : null;
+
+    if (u.gender == 'male' || u.gender == 'female') {
+      _selectedGender = u.gender;
+    } else {
+      _selectedGender = null;
+    }
+
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
     _heightController = TextEditingController(text: u.height?.toString() ?? '');
     _weightController = TextEditingController(text: u.weight?.toString() ?? '');
@@ -115,7 +121,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   controller: _usernameController,
                   decoration: const InputDecoration(
                     labelText: 'Nombre de usuario',
-                    prefixIcon: Icon(Icons.person, color: Colors.white70),
+                    prefixIcon: Icon(Icons.person),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
@@ -128,7 +134,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   value: _selectedGender,
                   decoration: const InputDecoration(
                     labelText: 'Género',
-                    prefixIcon: Icon(Icons.wc, color: Colors.white70),
+                    prefixIcon: Icon(Icons.wc),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
@@ -151,11 +157,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Edad',
-                    hintText: 'Ej: 30',
-                    prefixIcon: Icon(Icons.calendar_today, color: Colors.white70),
+                    prefixIcon: Icon(Icons.cake),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
+                    hintText: 'Ej: 30',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -166,11 +172,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Altura (cm)',
-                    hintText: 'Ej: 175',
-                    prefixIcon: Icon(Icons.height, color: Colors.white70),
+                    prefixIcon: Icon(Icons.height),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
+                    hintText: 'Ej: 175',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -181,16 +187,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Peso (kg)',
-                    hintText: 'Ej: 72.5',
-                    prefixIcon: Icon(Icons.monitor_weight, color: Colors.white70),
+                    prefixIcon: Icon(Icons.fitness_center),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
+                    hintText: 'Ej: 72.5',
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Mostrar error si existe
                 if (_errorMessage != null) ...[
                   Text(
                     _errorMessage!,
@@ -199,7 +204,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   const SizedBox(height: 12),
                 ],
 
-                // Botón de guardar
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _saveChanges,
                   style: ElevatedButton.styleFrom(
