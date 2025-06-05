@@ -225,7 +225,8 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       ),
     );
   }
-
+ 
+ 
   Widget _buildSessionsTab(state, Color cardColor) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
