@@ -31,8 +31,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
 
-    // Inicializamos _selectedGender solo si el valor viene como 'male' o 'female'.
-    if (u.gender == 'male' || u.gender == 'female') {
+    // Inicializamos _selectedGender solo si el valor viene como 'Hombre' o 'Mujer'.
+    if (u.gender == 'Hombre' || u.gender == 'Mujer') {
       _selectedGender = u.gender;
     } else {
       _selectedGender = null;
@@ -139,8 +139,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'male', child: Text('Hombre')),
-                    DropdownMenuItem(value: 'female', child: Text('Mujer')),
+                    DropdownMenuItem(value: 'Hombre', child: Text('Hombre')),
+                    DropdownMenuItem(value: 'Mujer', child: Text('Mujer')),
                   ],
                   onChanged: (val) {
                     setState(() {
