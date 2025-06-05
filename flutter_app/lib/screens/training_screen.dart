@@ -320,14 +320,25 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           // Botón para registrar sesión
           ElevatedButton.icon(
             onPressed: _addSession,
-            icon: const Icon(Icons.add),
-            label: const Text('Registrar sesión'),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Registrar sesión',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E88E5),
+              backgroundColor: const Color(0xFF001F3F), // Azul muy oscuro tipo LED
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              shadowColor: const Color(0xFF00BFFF), // Azul brillante tipo neón
+              elevation: 12,
+            ).copyWith(
+              overlayColor: MaterialStateProperty.all(const Color(0xFF005F9E)), // efecto al presionar
             ),
           ),
           const SizedBox(height: 16),
