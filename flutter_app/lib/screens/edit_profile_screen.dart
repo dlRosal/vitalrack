@@ -17,7 +17,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _usernameController;
-  String? _selectedGender; // Ya no usamos TextEditingController para género
+  String? _selectedGender;
   late TextEditingController _ageController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
@@ -30,14 +30,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.initState();
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
-
-    // Inicializamos _selectedGender solo si el valor viene como 'male' o 'female'.
-    if (u.gender == 'male' || u.gender == 'female') {
-      _selectedGender = u.gender;
-    } else {
-      _selectedGender = null;
-    }
-
+    _selectedGender = (u.gender == 'male' || u.gender == 'female') ? u.gender : null;
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
     _heightController = TextEditingController(text: u.height?.toString() ?? '');
     _weightController = TextEditingController(text: u.weight?.toString() ?? '');
@@ -69,7 +62,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       final username = _usernameController.text.trim();
-      final gender = _selectedGender; // Tomamos el valor del dropdown
+      final gender = _selectedGender;
       final age = _ageController.text.trim().isEmpty
           ? null
           : int.tryParse(_ageController.text.trim());
@@ -122,6 +115,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   controller: _usernameController,
                   decoration: const InputDecoration(
                     labelText: 'Nombre de usuario',
+                    prefixIcon: Icon(Icons.person, color: Colors.white70),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
@@ -134,6 +128,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   value: _selectedGender,
                   decoration: const InputDecoration(
                     labelText: 'Género',
+                    prefixIcon: Icon(Icons.wc, color: Colors.white70),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
@@ -156,10 +151,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Edad',
+                    hintText: 'Ej: 30',
+                    prefixIcon: Icon(Icons.calendar_today, color: Colors.white70),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
-                    hintText: 'Ej: 30',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -170,10 +166,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Altura (cm)',
+                    hintText: 'Ej: 175',
+                    prefixIcon: Icon(Icons.height, color: Colors.white70),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
-                    hintText: 'Ej: 175',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -184,10 +181,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Peso (kg)',
+                    hintText: 'Ej: 72.5',
+                    prefixIcon: Icon(Icons.monitor_weight, color: Colors.white70),
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
-                    hintText: 'Ej: 72.5',
                   ),
                 ),
                 const SizedBox(height: 20),

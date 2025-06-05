@@ -108,6 +108,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
               controller: _durationController,
               label: 'Duración (minutos)',
               keyboardType: TextInputType.number,
+              icon: Icons.timer_outlined,
             ),
             const SizedBox(height: 16),
             ...List.generate(widget.routine.exercises.length, (i) {
@@ -117,12 +118,14 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
                 label: '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
+                icon: Icons.fitness_center,
               );
             }),
             _buildInputField(
               controller: _notesController,
               label: 'Notas (opcional)',
               maxLines: 2,
+              icon: Icons.notes,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -146,7 +149,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
                       ),
                     )
                   : const Text(
-                      '💾 Registrar Sesión',
+                      'Registrar Sesión',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -166,6 +169,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     required String label,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    IconData? icon,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -186,6 +190,9 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
         maxLines: maxLines,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
+          prefixIcon: icon != null
+              ? Icon(icon, color: Colors.white70)
+              : null,
           contentPadding:
               const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           labelText: label,
