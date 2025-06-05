@@ -80,7 +80,6 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     final state = ref.watch(trainingProvider);
 
     final bgColor = const Color(0xFF0C0F1A);
-    final cardColor = const Color(0xFF1B2233);
     final neonAccent = const Color(0xFF00FFC6);
     final titleColor = const Color(0xFF80D8FF);
 

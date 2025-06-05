@@ -48,12 +48,12 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     final bgGradient = const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [Color(0xFF050A1F), Color(0xFF0C0F1A)],
+      colors: [Color(0xFF04060F), Color(0xFF0A0D18)],
     );
 
-    final cardColor = const Color(0xFF141A2E);
-    final neonAccent = const Color(0xFF00E5FF);
-    final appBarColor = const Color(0xFF0A112B);
+    final cardColor = const Color(0xFF101521);
+    final accentColor = const Color(0xFF1E88E5); // Más oscuro y menos brillante
+    final appBarColor = const Color(0xFF0A1123);
 
     return Scaffold(
       body: Container(
@@ -72,7 +72,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
               backgroundColor: appBarColor,
               foregroundColor: Colors.white,
               elevation: 8,
-              shadowColor: neonAccent.withOpacity(0.4),
+              shadowColor: accentColor.withOpacity(0.4),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(48),
                 child: AnimatedBuilder(
@@ -93,7 +93,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildRoutinesTab(state, cardColor, neonAccent),
+                  _buildRoutinesTab(state, cardColor, accentColor),
                   _buildSessionsTab(state, cardColor),
                 ],
               ),
@@ -117,13 +117,13 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? const Color(0xFF00E5FF) : Colors.white70,
+              color: selected ? const Color(0xFF1E88E5) : Colors.white70,
               fontWeight: FontWeight.w700,
               fontSize: selected ? 18 : 16,
               shadows: selected
                   ? [
                       const Shadow(
-                        color: Color(0xFF00E5FF),
+                        color: Color(0xFF1E88E5),
                         blurRadius: 12,
                         offset: Offset(0, 0),
                       )
@@ -136,7 +136,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     );
   }
 
-  Widget _buildRoutinesTab(state, Color cardColor, Color accent) {
+  Widget _buildRoutinesTab(state, Color cardColor, Color accentColor) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -146,35 +146,38 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
           const SizedBox(height: 12),
           _buildDropdown(),
           const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: state.loading ? null : _generate,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accent,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 240),
+            child: ElevatedButton(
+              onPressed: state.loading ? null : _generate,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 10,
+                shadowColor: accentColor.withOpacity(0.4),
               ),
-              elevation: 20,
-              shadowColor: accent.withOpacity(0.5),
+              child: state.loading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      '⚡ Generar Rutina',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
             ),
-            child: state.loading
-                ? const SizedBox(
-                    width: 26,
-                    height: 26,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text(
-                    '⚡ GENERAR RUTINA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.3,
-                    ),
-                  ),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -192,7 +195,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                       return Card(
                         color: cardColor,
                         elevation: 8,
-                        shadowColor: Colors.cyanAccent.withOpacity(0.3),
+                        shadowColor: Colors.blueAccent.withOpacity(0.2),
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -225,8 +228,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       ),
     );
   }
- 
- 
+
   Widget _buildSessionsTab(state, Color cardColor) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -275,7 +277,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1C223A).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF00E5FF), width: 1),
+        border: Border.all(color: const Color(0xFF1E88E5), width: 1),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextField(
@@ -296,7 +298,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1C223A).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF00E5FF), width: 1),
+        border: Border.all(color: const Color(0xFF1E88E5), width: 1),
       ),
       child: DropdownButton<String>(
         dropdownColor: const Color(0xFF1C223A),
