@@ -41,6 +41,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isLoading = authState.loading;
     final token = authState.token;
 
+    String generoLegible(String? gender) {
+      if (gender == 'male')   return 'Hombre';
+      if (gender == 'female') return 'Mujer';
+    return '—';
+    }
+
     // Si no hay token o usuario cargado, redirigimos a Login
     if (token == null || user == null) {
       Future.microtask(() {
@@ -128,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         user.username.isNotEmpty ? user.username : '—',
                       ),
                       _buildInfoTile('Correo electrónico', user.email),
-                      _buildInfoTile('Género', user.gender ?? '—'),
+                      _buildInfoTile('Género', generoLegible(user.gender) ?? '—'),
                       _buildInfoTile(
                           'Edad', user.age != null ? '${user.age} años' : '—'),
                       _buildInfoTile('Altura',

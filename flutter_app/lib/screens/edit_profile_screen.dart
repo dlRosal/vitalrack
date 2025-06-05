@@ -31,7 +31,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
 
-    if (u.gender == 'male' || u.gender == 'female') {
+    // Inicializamos _selectedGender solo si el valor viene como 'Hombre' o 'Mujer'.
+    if (u.gender == 'Hombre' || u.gender == 'Mujer') {
       _selectedGender = u.gender;
     } else {
       _selectedGender = null;
