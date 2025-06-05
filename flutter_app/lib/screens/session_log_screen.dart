@@ -21,6 +21,9 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
 
+  final Color _mainColor = const Color(0xFF0A2A4A); // AppBar y botones
+  final Color _backgroundColor = const Color(0xFF0C0F1A); // Fondo general
+
   @override
   void initState() {
     super.initState();
@@ -104,19 +107,16 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
 
-    final bgColor = const Color(0xFF0C0F1A);
-    final neonAccent = const Color(0xFF00FFC6);
-
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A2A4A),
+        backgroundColor: _mainColor,
         elevation: 0,
         automaticallyImplyLeading: false,
         toolbarHeight: 100,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF081A2C),
+            color: _mainColor,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -138,7 +138,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Log Sesión: ${widget.routine.name}',
+                      'Sesión: ${widget.routine.name}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -186,13 +186,13 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
               ElevatedButton(
                 onPressed: state.loading ? null : _saveSession,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: neonAccent,
+                  backgroundColor: _mainColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                   elevation: 6,
-                  shadowColor: neonAccent.withOpacity(0.7),
+                  shadowColor: Colors.black.withOpacity(0.5),
                 ),
                 child: state.loading
                     ? const SizedBox(
@@ -200,13 +200,13 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       )
                     : const Text(
                         'Registrar Sesión',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2,
                           fontSize: 16,
@@ -230,11 +230,11 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B2233),
+        color: _mainColor.withOpacity(0.25),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.cyanAccent.withOpacity(0.25),
+            color: _mainColor.withOpacity(0.25),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
