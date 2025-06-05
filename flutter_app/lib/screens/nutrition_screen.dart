@@ -43,7 +43,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
 
     final bgColor = const Color(0xFF0A0F0A);
     final cardColor = const Color(0xFF131E17);
-    final accent = const Color(0xFF4CAF50); // Verde más vivo
+    final accent = const Color(0xFF4CAF50); // Verde vivo
     final glow = Colors.greenAccent.withOpacity(0.2);
 
     return Scaffold(
@@ -73,12 +73,12 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                     duration: const Duration(milliseconds: 300),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: glow,
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
@@ -86,29 +86,39 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                       controller: _searchController,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Buscar alimento',
+                        hintText: 'Buscar alimento...',
                         hintStyle: const TextStyle(color: Colors.white70),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                            horizontal: 16, vertical: 16),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  child: Material(
+                  decoration: BoxDecoration(
                     color: accent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accent.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       onTap: state.loading ? null : _search,
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(14.0),
                         child: Icon(Icons.search, color: Colors.white),
                       ),
                     ),
@@ -116,7 +126,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (state.loading)
               CircularProgressIndicator(color: accent),
             if (state.error != null)
@@ -130,29 +140,38 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 itemCount: state.foods.length,
                 itemBuilder: (context, index) {
                   final Food food = state.foods[index];
-                  return GestureDetector(
-                    onTapDown: (_) {}, // para animación si quieres
-                    child: Card(
-                      color: cardColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  return Card(
+                    color: cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 10,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      title: Text(
+                        food.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
                       ),
-                      elevation: 8,
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        title: Text(
-                          food.name,
-                          style: const TextStyle(color: Colors.white),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Text(
+                          'Cal: ${food.calories} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
                         ),
-                        subtitle: Text(
-                          'Cal: ${food.calories} | P: ${food.protein}g | C: ${food.carbs}g | F: ${food.fat}g',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.add_circle, color: accent, size: 28),
-                          tooltip: 'Añadir consumo',
-                          onPressed: () => _logConsumption(food.id),
-                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.add_circle, color: accent, size: 32),
+                        tooltip: 'Añadir consumo',
+                        onPressed: () => _logConsumption(food.id),
                       ),
                     ),
                   );
