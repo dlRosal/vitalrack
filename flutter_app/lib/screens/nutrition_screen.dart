@@ -13,6 +13,9 @@ class NutritionScreen extends ConsumerStatefulWidget {
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   final _searchController = TextEditingController();
 
+  // Supongamos que el máximo de calorías diarias es 2000 (puedes ajustar)
+  static const int maxCalories = 2000;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -45,6 +48,12 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     final cardColor = const Color(0xFF131E17);
     final accent = const Color(0xFF4CAF50); // Verde vivo
     final glow = Colors.greenAccent.withOpacity(0.2);
+
+    // Obtiene el total de calorías consumidas del estado, o 0 si no existe
+    const totalCaloriesConsumed = 1500;
+
+    // Calcula el progreso para la barra, limitado a 1.0
+    final progress = (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -126,15 +135,36 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 ),
               ],
             ),
+
+            const SizedBox(height: 12),
+
+            // Texto explicativo sutil, en tono blanco con opacidad y letra pequeña
+            const Text(
+              'Selecciona alimentos para añadirlos a tu dieta. '
+              'Se contabilizan calorías, proteínas, carbohidratos y grasas consumidas.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
             const SizedBox(height: 20),
+
             if (state.loading)
               CircularProgressIndicator(color: accent),
+
             if (state.error != null)
               Text(
                 state.error!,
                 style: const TextStyle(color: Colors.redAccent),
               ),
+
             const SizedBox(height: 12),
+
+            // Listado de alimentos, ocupa espacio flexible
             Expanded(
               child: ListView.builder(
                 itemCount: state.foods.length,
@@ -177,6 +207,34 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                   );
                 },
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Barra de progreso de calorías consumidas
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Calorías consumidas: $totalCaloriesConsumed / $maxCalories kcal',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 14,
+                    color: accent,
+                    backgroundColor: cardColor.withOpacity(0.4),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
