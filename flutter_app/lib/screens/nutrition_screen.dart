@@ -50,7 +50,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     final glow = Colors.greenAccent.withOpacity(0.2);
 
     // Obtiene el total de calorías consumidas del estado, o 0 si no existe
-    const totalCaloriesConsumed = 1500;
+    const totalCaloriesConsumed = 1250;
 
     // Calcula el progreso para la barra, limitado a 1.0
     final progress = (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
