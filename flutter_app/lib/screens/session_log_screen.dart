@@ -12,16 +12,40 @@ class SessionLogScreen extends ConsumerStatefulWidget {
   ConsumerState<SessionLogScreen> createState() => _SessionLogScreenState();
 }
 
-class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
+class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
+    with SingleTickerProviderStateMixin {
   late final List<TextEditingController> _weightControllers;
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _weightControllers =
         widget.routine.exercises.map((_) => TextEditingController()).toList();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, -0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+
+    _animationController.forward();
   }
 
   @override
@@ -31,6 +55,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     }
     _durationController.dispose();
     _notesController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -85,79 +110,111 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A2A4A), // Azul oscuro que contrasta
-        title: Text(
-          'Log Sesión: ${widget.routine.name}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            letterSpacing: 1.2,
+        backgroundColor: const Color(0xFF0A2A4A),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 100,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF081A2C),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Log Sesión: ${widget.routine.name}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.3),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            _buildInputField(
-              controller: _durationController,
-              label: 'Duración (minutos)',
-              keyboardType: TextInputType.number,
-              icon: Icons.timer_outlined,
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(widget.routine.exercises.length, (i) {
-              final ex = widget.routine.exercises[i];
-              return _buildInputField(
-                controller: _weightControllers[i],
-                label: '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                icon: Icons.fitness_center,
-              );
-            }),
-            _buildInputField(
-              controller: _notesController,
-              label: 'Notas (opcional)',
-              maxLines: 2,
-              icon: Icons.notes,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: state.loading ? null : _saveSession,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: neonAccent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 6,
-                shadowColor: neonAccent.withOpacity(0.7),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ListView(
+            children: [
+              _buildInputField(
+                controller: _durationController,
+                label: 'Duración (minutos)',
+                keyboardType: TextInputType.number,
+                icon: Icons.timer_outlined,
               ),
-              child: state.loading
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.black,
+              const SizedBox(height: 16),
+              ...List.generate(widget.routine.exercises.length, (i) {
+                final ex = widget.routine.exercises[i];
+                return _buildInputField(
+                  controller: _weightControllers[i],
+                  label: '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  icon: Icons.fitness_center,
+                );
+              }),
+              _buildInputField(
+                controller: _notesController,
+                label: 'Notas (opcional)',
+                maxLines: 2,
+                icon: Icons.notes,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: state.loading ? null : _saveSession,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: neonAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 6,
+                  shadowColor: neonAccent.withOpacity(0.7),
+                ),
+                child: state.loading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      )
+                    : const Text(
+                        'Registrar Sesión',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          fontSize: 16,
+                        ),
                       ),
-                    )
-                  : const Text(
-                      'Registrar Sesión',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        fontSize: 16,
-                      ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -189,9 +246,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen> {
         maxLines: maxLines,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          prefixIcon: icon != null
-              ? Icon(icon, color: Colors.white70)
-              : null,
+          prefixIcon: icon != null ? Icon(icon, color: Colors.white70) : null,
           contentPadding:
               const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           labelText: label,
