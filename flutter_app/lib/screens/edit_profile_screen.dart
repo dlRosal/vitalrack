@@ -17,7 +17,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _usernameController;
-  late TextEditingController _genderController; // → Se reemplaza el antiguo _selectedGender
+  String? _selectedGender; // Ya no usamos TextEditingController para género
   late TextEditingController _ageController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
@@ -30,7 +30,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.initState();
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
-    _genderController = TextEditingController(text: u.gender ?? ''); // ← Inicializamos aquí
+
+    // Inicializamos _selectedGender solo si el valor viene como 'male' o 'female'.
+    if (u.gender == 'male' || u.gender == 'female') {
+      _selectedGender = u.gender;
+    } else {
+      _selectedGender = null;
+    }
+
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
     _heightController = TextEditingController(text: u.height?.toString() ?? '');
     _weightController = TextEditingController(text: u.weight?.toString() ?? '');
@@ -39,7 +46,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _genderController.dispose(); // ← Liberamos el controlador de género
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
@@ -63,10 +69,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       final username = _usernameController.text.trim();
-      // Tomamos el texto del TextField de género; si está vacío, lo enviamos como null
-      final gender = _genderController.text.trim().isEmpty
-          ? null
-          : _genderController.text.trim();
+      final gender = _selectedGender; // Tomamos el valor del dropdown
       final age = _ageController.text.trim().isEmpty
           ? null
           : int.tryParse(_ageController.text.trim());
@@ -114,7 +117,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
-                // Campo Nombre de usuario
+                // Campo de usuario
                 TextField(
                   controller: _usernameController,
                   decoration: const InputDecoration(
@@ -126,16 +129,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // → Antes se usaba DropdownButtonFormField para género; ahora es un TextField
-                TextField(
-                  controller: _genderController,
+                // Dropdown para género
+                DropdownButtonFormField<String>(
+                  value: _selectedGender,
                   decoration: const InputDecoration(
                     labelText: 'Género',
                     filled: true,
                     fillColor: Color(0xFF2A2A2A),
                     border: OutlineInputBorder(),
-                    hintText: 'Ej: Hombre, Mujer, Otro...',
                   ),
+                  items: const [
+                    DropdownMenuItem(value: 'male', child: Text('Hombre')),
+                    DropdownMenuItem(value: 'female', child: Text('Mujer')),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedGender = val;
+                    });
+                  },
                 ),
                 const SizedBox(height: 12),
 
@@ -181,7 +192,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Mostrar mensaje de error si existe
+                // Mostrar error si existe
                 if (_errorMessage != null) ...[
                   Text(
                     _errorMessage!,
@@ -190,7 +201,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   const SizedBox(height: 12),
                 ],
 
-                // Botón Guardar cambios
+                // Botón de guardar
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _saveChanges,
                   style: ElevatedButton.styleFrom(
