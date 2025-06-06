@@ -262,7 +262,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
               textAlign: TextAlign.center,
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             if (state.loading) CircularProgressIndicator(color: accent),
 
@@ -360,7 +360,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                                   padding:
                                       const EdgeInsets.only(top: 6.0),
                                   child: Text(
-                                    'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
+                                    'Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
                                     style: const TextStyle(
                                       color: Colors.white70,
                                       fontSize: 14,
