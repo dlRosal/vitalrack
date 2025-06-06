@@ -21,8 +21,8 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
 
-  final Color _mainColor = const Color(0xFF0A2A4A);
-  final Color _backgroundColor = const Color(0xFF0C0F1A);
+  final Color _mainColor = const Color(0xFF0A2A4A); // AppBar y botones
+  final Color _backgroundColor = const Color(0xFF0C0F1A); // Fondo general
 
   @override
   void initState() {
@@ -109,111 +109,109 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
 
     return Scaffold(
       backgroundColor: _backgroundColor,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [_backgroundColor, _mainColor.withOpacity(0.2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      appBar: AppBar(
+        backgroundColor: _mainColor,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 100,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: _mainColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              SlideTransition(
-                position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 20),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Sesión: ${widget.routine.name}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const Spacer(flex: 2),
-                      ],
+          child: SafeArea(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sesión: ${widget.routine.name}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16.0),
-                    children: [
-                      _buildInputField(
-                        controller: _durationController,
-                        label: 'Duración (minutos)',
-                        keyboardType: TextInputType.number,
-                        icon: Icons.timer_outlined,
-                      ),
-                      const SizedBox(height: 16),
-                      ...List.generate(widget.routine.exercises.length, (i) {
-                        final ex = widget.routine.exercises[i];
-                        return _buildInputField(
-                          controller: _weightControllers[i],
-                          label:
-                              '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
-                          icon: Icons.fitness_center,
-                        );
-                      }),
-                      _buildInputField(
-                        controller: _notesController,
-                        label: 'Notas (opcional)',
-                        maxLines: 2,
-                        icon: Icons.notes,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: state.loading ? null : _saveSession,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _mainColor,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 10,
-                          shadowColor: Colors.cyanAccent.withOpacity(0.5),
-                        ),
-                        child: state.loading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Registrar Sesión',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                  fontSize: 16,
-                                ),
-                              ),
-                      ),
-                    ],
+            ),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ListView(
+            children: [
+              _buildInputField(
+                controller: _durationController,
+                label: 'Duración (minutos)',
+                keyboardType: TextInputType.number,
+                icon: Icons.timer_outlined,
+              ),
+              const SizedBox(height: 16),
+              ...List.generate(widget.routine.exercises.length, (i) {
+                final ex = widget.routine.exercises[i];
+                return _buildInputField(
+                  controller: _weightControllers[i],
+                  label: '${ex.name} (${ex.sets}×${ex.reps}) - Peso (kg)',
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  icon: Icons.fitness_center,
+                );
+              }),
+              _buildInputField(
+                controller: _notesController,
+                label: 'Notas (opcional)',
+                maxLines: 2,
+                icon: Icons.notes,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: state.loading ? null : _saveSession,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _mainColor,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
+                  elevation: 6,
+                  shadowColor: Colors.black.withOpacity(0.5),
                 ),
+                child: state.loading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Registrar Sesión',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -236,9 +234,9 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.cyanAccent.withOpacity(0.2),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: _mainColor.withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
