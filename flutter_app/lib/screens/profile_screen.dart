@@ -18,12 +18,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen>
-    with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   File? _pickedImage;
   final ImagePicker _picker = ImagePicker();
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -31,32 +28,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     if (pickedFile != null) {
       setState(() {
         _pickedImage = File(pickedFile.path);
+        // Nota: si quieres subirla al servidor, deberías
+        // implementar aquí la llamada a algún endpoint /upload-avatar.
       });
-      _controller.forward(from: 0.0);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _scaleAnimation =
-        CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  String generoLegible(String? gender) {
-    if (gender == 'male') return 'Hombre';
-    if (gender == 'female') return 'Mujer';
-    return '—';
   }
 
   @override
@@ -66,6 +41,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final isLoading = authState.loading;
     final token = authState.token;
 
+    String generoLegible(String? gender) {
+      if (gender == 'male')   return 'Hombre';
+      if (gender == 'female') return 'Mujer';
+    return '—';
+    }
+
+    // Si no hay token o usuario cargado, redirigimos a Login
     if (token == null || user == null) {
       Future.microtask(() {
         Navigator.of(context).pushReplacement(
@@ -109,111 +91,100 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   child: CircularProgressIndicator(color: Colors.tealAccent))
               : Padding(
                   padding: const EdgeInsets.all(16),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 400),
-                    child: ListView(
-                      key: ValueKey(user), // Para asegurar que AnimatedSwitcher funcione
-                      children: [
-                        GestureDetector(
-                          onTap: _pickImage,
-                          child: ScaleTransition(
-                            scale: _scaleAnimation,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.tealAccent.withOpacity(0.4),
-                                    blurRadius: 20,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundColor: const Color(0xFF263238),
-                                backgroundImage: _pickedImage != null
-                                    ? FileImage(_pickedImage!)
-                                    : null,
-                                child: _pickedImage == null
-                                    ? Text(
-                                        user.username.isNotEmpty
-                                            ? user.username[0].toUpperCase()
-                                            : user.email[0].toUpperCase(),
-                                        style: const TextStyle(
-                                          fontSize: 40,
-                                          color: Colors.tealAccent,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        AnimatedOpacity(
-                          opacity: 1.0,
-                          duration: const Duration(milliseconds: 500),
-                          child: Column(
-                            children: [
-                              _buildInfoTile('Usuario',
-                                  user.username.isNotEmpty ? user.username : '—'),
-                              _buildInfoTile('Correo electrónico', user.email),
-                              _buildInfoTile(
-                                  'Género', generoLegible(user.gender) ?? '—'),
-                              _buildInfoTile('Edad',
-                                  user.age != null ? '${user.age} años' : '—'),
-                              _buildInfoTile('Altura',
-                                  user.height != null ? '${user.height} cm' : '—'),
-                              _buildInfoTile('Peso',
-                                  user.weight != null ? '${user.weight} kg' : '—'),
-                              _buildInfoTile(
-                                'Objetivo',
-                                user.goal == 'bulk'
-                                    ? 'Ganar volumen'
-                                    : user.goal == 'cut'
-                                        ? 'Definir'
-                                        : 'Mantener',
-                              ),
-                              _buildInfoTile(
-                                'Días de entrenamiento',
-                                user.trainingDays?.toString() ?? '—',
+                  child: ListView(
+                    children: [
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.tealAccent.withOpacity(0.4),
+                                blurRadius: 20,
+                                spreadRadius: 2,
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 32),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.edit, color: Colors.black),
-                          label: const Text(
-                            'Editar Perfil',
-                            style: TextStyle(color: Colors.black),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: const Color(0xFF263238),
+                            backgroundImage: _pickedImage != null
+                                ? FileImage(_pickedImage!)
+                                : null,
+                            child: _pickedImage == null
+                                ? Text(
+                                    // Si el usuario no tiene nombre, muestro la primera letra del email
+                                    user.username.isNotEmpty
+                                        ? user.username[0].toUpperCase()
+                                        : user.email[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 40,
+                                      color: Colors.tealAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.tealAccent,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildInfoTile(
+                        'Usuario',
+                        user.username.isNotEmpty ? user.username : '—',
+                      ),
+                      _buildInfoTile('Correo electrónico', user.email),
+                      _buildInfoTile('Género', generoLegible(user.gender) ?? '—'),
+                      _buildInfoTile(
+                          'Edad', user.age != null ? '${user.age} años' : '—'),
+                      _buildInfoTile('Altura',
+                          user.height != null ? '${user.height} cm' : '—'),
+                      _buildInfoTile(
+                          'Peso', user.weight != null ? '${user.weight} kg' : '—'),
+                      _buildInfoTile(
+                          'Objetivo',
+                          user.goal == 'bulk'
+                              ? 'Ganar volumen'
+                              : user.goal == 'cut'
+                                  ? 'Definir'
+                                  : 'Mantener'),
+                      _buildInfoTile(
+                          'Días de entrenamiento',
+                          user.trainingDays != null
+                              ? '${user.trainingDays}'
+                              : '—'),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit, color: Colors.black),
+                        label: const Text(
+                          'Editar Perfil',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.tealAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 8,
+                          shadowColor: Colors.tealAccent.withOpacity(0.6),
+                        ),
+                        onPressed: () async {
+                          // Navegamos a edición, pasando el usuario actual
+                          final updatedUser = await Navigator.push<User>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditProfileScreen(initialUser: user),
                             ),
-                            elevation: 8,
-                            shadowColor: Colors.tealAccent.withOpacity(0.6),
-                          ),
-                          onPressed: () async {
-                            final updatedUser = await Navigator.push<User>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    EditProfileScreen(initialUser: user),
-                              ),
-                            );
-                            if (updatedUser != null) {
-                              await ref.read(authProvider.notifier).loadUser();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
+                          );
+                          // Si volvió un usuario actualizado, recargamos el estado
+                          if (updatedUser != null) {
+                            await ref.read(authProvider.notifier).loadUser();
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
         ),
