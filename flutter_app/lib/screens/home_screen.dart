@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -7,29 +8,53 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String? _hoveredOption;
   bool _isProfileHovered = false;
   late AnimationController _fadeController;
+  late AnimationController _bgParticlesController;
   late Animation<double> _fadeAnimation;
+
+  final int _particleCount = 80;
+  final Random _random = Random();
+
+  late List<_Particle> _particles;
 
   @override
   void initState() {
     super.initState();
+
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
       curve: Curves.easeInOut,
     );
     _fadeController.forward();
+
+    _bgParticlesController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 30),
+    )..repeat();
+
+    _particles = List.generate(_particleCount, (index) {
+      return _Particle(
+        dx: _random.nextDouble(),
+        dy: _random.nextDouble(),
+        radius: _random.nextDouble() * 2.5 + 0.5,
+        speedX: _random.nextDouble() * 0.001 - 0.0005,
+        speedY: _random.nextDouble() * 0.001 - 0.0005,
+        opacity: _random.nextDouble() * 0.5 + 0.2,
+      );
+    });
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
+    _bgParticlesController.dispose();
     super.dispose();
   }
 
@@ -37,102 +62,149 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Vitalrack',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
+      body: Stack(
+        children: [
+          // Fondo animado de partículas
+          AnimatedBuilder(
+            animation: _bgParticlesController,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: _ParticlePainter(particles: _particles, progress: _bgParticlesController.value),
+                size: MediaQuery.of(context).size,
+              );
+            },
           ),
-        ),
-        centerTitle: true,
-        actions: [
-          MouseRegion(
-            onEnter: (_) => setState(() => _isProfileHovered = true),
-            onExit: (_) => setState(() => _isProfileHovered = false),
-            cursor: SystemMouseCursors.click,
-            child: AnimatedScale(
-              scale: _isProfileHovered ? 1.15 : 1.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.elasticOut,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isProfileHovered ? Colors.white.withOpacity(0.12) : Colors.transparent,
-                  boxShadow: _isProfileHovered
-                      ? [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.2),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 4),
+
+          // Contenido con fade
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Logo con glow animado
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              RotationTransition(
+                                turns: Tween(begin: 0.0, end: 1.0)
+                                    .animate(CurvedAnimation(parent: _bgParticlesController, curve: Curves.linear)),
+                                child: Container(
+                                  width: 200,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        Colors.blueAccent.withOpacity(0.1),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.4, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 160,
+                                child: Image.asset('assets/logosinfondo.png'),
+                              ),
+                            ],
                           ),
-                        ]
-                      : [],
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.person_outline),
-                  color: Colors.white,
-                  tooltip: 'Ver perfil',
-                  iconSize: 42,
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/profile');
-                  },
-                  splashRadius: 30,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 200,
-                        child: Image.asset('assets/logosinfondo.png'),
+                          const SizedBox(height: 32),
+                          _buildOptionCard(
+                            context,
+                            title: 'Nutrición',
+                            icon: Icons.restaurant_menu_rounded,
+                            color: const Color(0xFF2F855A),
+                            route: '/nutrition',
+                          ),
+                          const SizedBox(height: 28),
+                          _buildOptionCard(
+                            context,
+                            title: 'Entrenamiento',
+                            icon: Icons.fitness_center_rounded,
+                            color: const Color(0xFF2C5282),
+                            route: '/training',
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 32),
-                      _buildOptionCard(
-                        context,
-                        title: 'Nutrición',
-                        icon: Icons.restaurant_menu_rounded,
-                        color: const Color(0xFF2F855A),
-                        route: '/nutrition',
-                      ),
-                      const SizedBox(height: 28),
-                      _buildOptionCard(
-                        context,
-                        title: 'Entrenamiento',
-                        icon: Icons.fitness_center_rounded,
-                        color: const Color(0xFF2C5282),
-                        route: '/training',
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+
+          // AppBar personalizado
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text(
+                'Vitalrack',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              centerTitle: true,
+              actions: [
+                MouseRegion(
+                  onEnter: (_) => setState(() => _isProfileHovered = true),
+                  onExit: (_) => setState(() => _isProfileHovered = false),
+                  cursor: SystemMouseCursors.click,
+                  child: AnimatedScale(
+                    scale: _isProfileHovered ? 1.15 : 1.0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.elasticOut,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _isProfileHovered ? Colors.white.withOpacity(0.12) : Colors.transparent,
+                        boxShadow: _isProfileHovered
+                            ? [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.person_outline),
+                        color: Colors.white,
+                        tooltip: 'Ver perfil',
+                        iconSize: 42,
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/profile');
+                        },
+                        splashRadius: 30,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -233,4 +305,48 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
   }
+}
+
+class _Particle {
+  double dx, dy, radius, speedX, speedY, opacity;
+  _Particle({
+    required this.dx,
+    required this.dy,
+    required this.radius,
+    required this.speedX,
+    required this.speedY,
+    required this.opacity,
+  });
+
+  void update(double progress) {
+    dx += speedX;
+    dy += speedY;
+
+    if (dx < 0 || dx > 1) speedX = -speedX;
+    if (dy < 0 || dy > 1) speedY = -speedY;
+  }
+}
+
+class _ParticlePainter extends CustomPainter {
+  final List<_Particle> particles;
+  final double progress;
+
+  _ParticlePainter({required this.particles, required this.progress}) {
+    for (var p in particles) {
+      p.update(progress);
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+
+    for (var p in particles) {
+      paint.color = Colors.white.withOpacity(p.opacity);
+      canvas.drawCircle(Offset(p.dx * size.width, p.dy * size.height), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:math';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,10 +21,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   double _formOpacity = 0;
   Offset _formOffset = const Offset(0, 0.1);
 
+  late AnimationController _logoController;
+  late Animation<double> _logoAnimation;
+  late Animation<double> _rotationAnimation;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 300), () {
+
+    // Animación del logo
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _logoAnimation =
+        CurvedAnimation(parent: _logoController, curve: Curves.elasticOut);
+
+    _rotationAnimation =
+        Tween<double>(begin: -pi / 12, end: 0).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.easeOutBack,
+    ));
+
+    _logoController.forward();
+
+    // Animación de aparición del formulario
+    Future.delayed(const Duration(milliseconds: 600), () {
       setState(() {
         _formOpacity = 1;
         _formOffset = Offset.zero;
@@ -35,6 +59,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _logoController.dispose();
     super.dispose();
   }
 
@@ -68,11 +93,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       fillColor: const Color(0xFF2A2A2A),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
+        borderSide:
+            BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
+        borderSide:
+            BorderSide(color: isFocused ? Colors.blueAccent : Colors.grey),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -88,29 +115,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20), // reducido de 40 a 20
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
         child: Column(
           children: [
-            const SizedBox(height: 20), // reducido de 40 a 20
-            Image.asset(
-              'assets/logosinfondo.png',
-              height: 180,
+            const SizedBox(height: 20),
+            AnimatedBuilder(
+              animation: _logoAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, (1 - _logoAnimation.value) * -40),
+                  child: Transform.rotate(
+                    angle: _rotationAnimation.value,
+                    child: Transform.scale(
+                      scale: _logoAnimation.value,
+                      child: child,
+                    ),
+                  ),
+                );
+              },
+              child: Image.asset(
+                'assets/logosinfondo.png',
+                height: 180,
+              ),
             ),
-            const SizedBox(height: 12), // reducido de 16 a 12
-
+            const SizedBox(height: 12),
             AnimatedOpacity(
               opacity: _formOpacity,
-              duration: const Duration(milliseconds: 600),
+              duration: const Duration(milliseconds: 800),
               curve: Curves.easeOut,
               child: AnimatedSlide(
                 offset: _formOffset,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOut,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 400,
-                    ),
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -142,70 +181,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(height: 20),
-
                           Focus(
                             child: Builder(builder: (context) {
                               final hasFocus = Focus.of(context).hasFocus;
-                              return TextField(
-                                controller: _emailController,
-                                style: const TextStyle(color: Colors.white),
-                                decoration: _inputDecoration('Email', hasFocus),
-                                keyboardType: TextInputType.emailAddress,
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                child: TextField(
+                                  controller: _emailController,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration:
+                                      _inputDecoration('Email', hasFocus),
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
                               );
                             }),
                           ),
-
                           const SizedBox(height: 16),
-
                           Focus(
                             child: Builder(builder: (context) {
                               final hasFocus = Focus.of(context).hasFocus;
-                              return TextField(
-                                controller: _passwordController,
-                                obscureText: true,
-                                style: const TextStyle(color: Colors.white),
-                                decoration: _inputDecoration('Contraseña', hasFocus),
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                child: TextField(
+                                  controller: _passwordController,
+                                  obscureText: true,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration:
+                                      _inputDecoration('Contraseña', hasFocus),
+                                ),
                               );
                             }),
                           ),
-
                           const SizedBox(height: 20),
-
                           if (authState.loading) ...[
-                            const Center(child: CircularProgressIndicator(color: Colors.white)),
+                            const Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white)),
                             const SizedBox(height: 20),
                           ],
-
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
                             child: authState.error != null
                                 ? Text(
                                     authState.error!,
                                     key: ValueKey(authState.error),
-                                    style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   )
-                                : const SizedBox.shrink(key: ValueKey('no-error')),
+                                : const SizedBox.shrink(
+                                    key: ValueKey('no-error')),
                           ),
-
-                          if (authState.error != null) const SizedBox(height: 16),
-
+                          if (authState.error != null)
+                            const SizedBox(height: 16),
                           Row(
                             children: [
                               Expanded(
                                 child: GestureDetector(
-                                  onTapDown: (_) => setState(() => _loginScale = 0.95),
+                                  onTapDown: (_) =>
+                                      setState(() => _loginScale = 0.95),
                                   onTapUp: (_) async {
                                     setState(() => _loginScale = 1.0);
                                     if (!authState.loading) await _login();
                                   },
-                                  onTapCancel: () => setState(() => _loginScale = 1.0),
+                                  onTapCancel: () =>
+                                      setState(() => _loginScale = 1.0),
                                   child: AnimatedScale(
                                     scale: _loginScale,
-                                    duration: const Duration(milliseconds: 100),
+                                    duration:
+                                        const Duration(milliseconds: 100),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 150),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
                                       decoration: BoxDecoration(
                                         color: _loginScale < 1.0
                                             ? Colors.green[700]
@@ -213,8 +263,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         borderRadius: BorderRadius.circular(10),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.greenAccent.withOpacity(
-                                                _loginScale < 1.0 ? 0.6 : 0.4),
+                                            color:
+                                                Colors.greenAccent.withOpacity(
+                                                    _loginScale < 1.0
+                                                        ? 0.6
+                                                        : 0.4),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -238,18 +291,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               const SizedBox(width: 16),
                               Expanded(
                                 child: GestureDetector(
-                                  onTapDown: (_) => setState(() => _registerScale = 0.95),
+                                  onTapDown: (_) =>
+                                      setState(() => _registerScale = 0.95),
                                   onTapUp: (_) async {
                                     setState(() => _registerScale = 1.0);
                                     if (!authState.loading) await _register();
                                   },
-                                  onTapCancel: () => setState(() => _registerScale = 1.0),
+                                  onTapCancel: () =>
+                                      setState(() => _registerScale = 1.0),
                                   child: AnimatedScale(
                                     scale: _registerScale,
-                                    duration: const Duration(milliseconds: 100),
+                                    duration:
+                                        const Duration(milliseconds: 100),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 150),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
                                       decoration: BoxDecoration(
                                         color: _registerScale < 1.0
                                             ? Colors.blue[700]
@@ -257,8 +315,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         borderRadius: BorderRadius.circular(10),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.blueAccent.withOpacity(
-                                                _registerScale < 1.0 ? 0.6 : 0.4),
+                                            color:
+                                                Colors.blueAccent.withOpacity(
+                                                    _registerScale < 1.0
+                                                        ? 0.6
+                                                        : 0.4),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
