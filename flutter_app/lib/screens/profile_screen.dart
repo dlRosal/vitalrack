@@ -18,9 +18,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with TickerProviderStateMixin {
   File? _pickedImage;
   final ImagePicker _picker = ImagePicker();
+
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -28,10 +32,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (pickedFile != null) {
       setState(() {
         _pickedImage = File(pickedFile.path);
-        // Nota: si quieres subirla al servidor, deberías
-        // implementar aquí la llamada a algún endpoint /upload-avatar.
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String generoLegible(String? gender) {
+    if (gender == 'male') return 'Hombre';
+    if (gender == 'female') return 'Mujer';
+    return '—';
   }
 
   @override
@@ -41,13 +77,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isLoading = authState.loading;
     final token = authState.token;
 
-    String generoLegible(String? gender) {
-      if (gender == 'male')   return 'Hombre';
-      if (gender == 'female') return 'Mujer';
-    return '—';
-    }
-
-    // Si no hay token o usuario cargado, redirigimos a Login
     if (token == null || user == null) {
       Future.microtask(() {
         Navigator.of(context).pushReplacement(
@@ -87,8 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 700),
           child: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: Colors.tealAccent))
+              ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
               : Padding(
                   padding: const EdgeInsets.all(16),
                   child: ListView(
@@ -141,18 +169,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           user.height != null ? '${user.height} cm' : '—'),
                       _buildInfoTile(
                           'Peso', user.weight != null ? '${user.weight} kg' : '—'),
-                      _buildInfoTile(
-                          'Objetivo',
-                          user.goal == 'bulk'
-                              ? 'Ganar volumen'
-                              : user.goal == 'cut'
-                                  ? 'Definir'
-                                  : 'Mantener'),
-                      _buildInfoTile(
-                          'Días de entrenamiento',
-                          user.trainingDays != null
-                              ? '${user.trainingDays}'
-                              : '—'),
                       const SizedBox(height: 32),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit, color: Colors.black),
@@ -189,6 +205,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
         ),
       ),
+    );
+  }
+
+  Widget _animatedTile(int index, String label, String value) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final delay = (index + 1) * 0.1;
+        final animationValue = (_controller.value - delay).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: animationValue,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - animationValue)),
+            child: _buildInfoTile(label, value),
+          ),
+        );
+      },
     );
   }
 

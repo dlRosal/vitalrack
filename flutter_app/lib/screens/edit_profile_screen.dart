@@ -17,7 +17,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
       _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> with SingleTickerProviderStateMixin {
   late TextEditingController _usernameController;
   String? _selectedGender;
   late TextEditingController _ageController;
@@ -29,32 +29,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
 
-    // Inicializamos _selectedGender según valor de API ('male' o 'female')
-    if (u.gender == 'male' || u.gender == 'female') {
+    // Inicializamos _selectedGender solo si el valor viene como 'Hombre' o 'Mujer'.
+    if (u.gender == 'Hombre' || u.gender == 'Mujer') {
       _selectedGender = u.gender;
     } else {
       _selectedGender = null;
     }
 
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
-    _heightController =
-        TextEditingController(text: u.height?.toString() ?? '');
-    _weightController =
-        TextEditingController(text: u.weight?.toString() ?? '');
-
-    // Inicializamos goal y trainingDays
-    _selectedGoal = u.goal;
-    _trainingDays = u.trainingDays;
+    _heightController = TextEditingController(text: u.height?.toString() ?? '');
+    _weightController = TextEditingController(text: u.weight?.toString() ?? '');
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     _usernameController.dispose();
     _ageController.dispose();
     _heightController.dispose();
@@ -117,6 +116,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  Widget animatedField(Widget child, int index) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: AnimatedPadding(
+        duration: Duration(milliseconds: 300 + index * 100),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,7 +167,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   items: const [
                     DropdownMenuItem(value: 'male', child: Text('Hombre')),
                     DropdownMenuItem(value: 'female', child: Text('Mujer')),
-                    DropdownMenuItem(value: 'other', child: Text('Otro')),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -210,91 +219,49 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     hintText: 'Ej: 72.5',
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                // Objetivo (bulk, cut, maintain)
-                DropdownButtonFormField<String>(
-                  value: _selectedGoal,
-                  decoration: const InputDecoration(
-                    labelText: 'Objetivo',
-                    prefixIcon: Icon(Icons.flag),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'bulk', child: Text('Ganar volumen')),
-                    DropdownMenuItem(value: 'cut', child: Text('Definir')),
-                    DropdownMenuItem(value: 'maintain', child: Text('Mantener')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedGoal = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Días de entrenamiento por semana
-                DropdownButtonFormField<int>(
-                  value: _trainingDays,
-                  decoration: const InputDecoration(
-                    labelText: 'Días de entrenamiento/semana',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: List.generate(
-                    7,
-                    (i) => DropdownMenuItem(
-                      value: i + 1,
-                      child: Text('${i + 1}'),
-                    ),
-                  ),
-                  onChanged: (val) {
-                    setState(() {
-                      _trainingDays = val;
-                    });
-                  },
-                ),
                 const SizedBox(height: 20),
 
-                if (_errorMessage != null) ...[
-                  Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 12),
-                ],
+                  if (_errorMessage != null)
+                    animatedField(
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      5,
+                    ),
 
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _saveChanges,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.tealAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0.9, end: 1.0)
+                        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack)),
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _saveChanges,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.tealAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Guardar cambios',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Guardar cambios',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

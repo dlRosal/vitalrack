@@ -100,19 +100,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8), // <-- reducido vertical
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withOpacity(0.15), // <-- más transparente
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: Colors.white24, width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withOpacity(0.3),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
                         ),
