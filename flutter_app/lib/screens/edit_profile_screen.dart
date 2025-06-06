@@ -15,7 +15,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> with SingleTickerProviderStateMixin {
   late TextEditingController _usernameController;
   String? _selectedGender;
   late TextEditingController _ageController;
@@ -25,13 +25,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
 
-    // Inicializamos _selectedGender solo si el valor viene como 'Hombre' o 'Mujer'.
     if (u.gender == 'Hombre' || u.gender == 'Mujer') {
       _selectedGender = u.gender;
     } else {
@@ -41,10 +44,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
     _heightController = TextEditingController(text: u.height?.toString() ?? '');
     _weightController = TextEditingController(text: u.weight?.toString() ?? '');
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _controller.forward();
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     _usernameController.dispose();
     _ageController.dispose();
     _heightController.dispose();
@@ -103,6 +119,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  Widget animatedField(Widget child, int index) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: AnimatedPadding(
+        duration: Duration(milliseconds: 300 + index * 100),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,128 +137,138 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: const Text('Editar Perfil'),
         backgroundColor: const Color(0xFF1F1F1F),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              children: [
-                // Campo de usuario
-                TextField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre de usuario',
-                    prefixIcon: Icon(Icons.person),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ListView(
+                children: [
+                  animatedField(
+                    TextField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre de usuario',
+                        prefixIcon: Icon(Icons.person),
+                        filled: true,
+                        fillColor: Color(0xFF2A2A2A),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    0,
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Dropdown para género
-                DropdownButtonFormField<String>(
-                  value: _selectedGender,
-                  decoration: const InputDecoration(
-                    labelText: 'Género',
-                    prefixIcon: Icon(Icons.wc),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
+                  animatedField(
+                    DropdownButtonFormField<String>(
+                      value: _selectedGender,
+                      decoration: const InputDecoration(
+                        labelText: 'Género',
+                        prefixIcon: Icon(Icons.wc),
+                        filled: true,
+                        fillColor: Color(0xFF2A2A2A),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Hombre', child: Text('Hombre')),
+                        DropdownMenuItem(value: 'Mujer', child: Text('Mujer')),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedGender = val;
+                        });
+                      },
+                    ),
+                    1,
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'male', child: Text('Hombre')),
-                    DropdownMenuItem(value: 'female', child: Text('Mujer')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedGender = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Edad
-                TextField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Edad',
-                    prefixIcon: Icon(Icons.cake),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 30',
+                  animatedField(
+                    TextField(
+                      controller: _ageController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Edad',
+                        prefixIcon: Icon(Icons.cake),
+                        filled: true,
+                        fillColor: Color(0xFF2A2A2A),
+                        border: OutlineInputBorder(),
+                        hintText: 'Ej: 30',
+                      ),
+                    ),
+                    2,
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Altura
-                TextField(
-                  controller: _heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Altura (cm)',
-                    prefixIcon: Icon(Icons.height),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 175',
+                  animatedField(
+                    TextField(
+                      controller: _heightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Altura (cm)',
+                        prefixIcon: Icon(Icons.height),
+                        filled: true,
+                        fillColor: Color(0xFF2A2A2A),
+                        border: OutlineInputBorder(),
+                        hintText: 'Ej: 175',
+                      ),
+                    ),
+                    3,
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Peso
-                TextField(
-                  controller: _weightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Peso (kg)',
-                    prefixIcon: Icon(Icons.fitness_center),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 72.5',
+                  animatedField(
+                    TextField(
+                      controller: _weightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Peso (kg)',
+                        prefixIcon: Icon(Icons.fitness_center),
+                        filled: true,
+                        fillColor: Color(0xFF2A2A2A),
+                        border: OutlineInputBorder(),
+                        hintText: 'Ej: 72.5',
+                      ),
+                    ),
+                    4,
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                if (_errorMessage != null) ...[
-                  Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 12),
-                ],
+                  if (_errorMessage != null)
+                    animatedField(
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      5,
+                    ),
 
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _saveChanges,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.tealAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0.9, end: 1.0)
+                        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack)),
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _saveChanges,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.tealAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Guardar cambios',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Guardar cambios',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

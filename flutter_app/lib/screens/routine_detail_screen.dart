@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
 import '../models/routine.dart';
 
-class RoutineDetailScreen extends StatelessWidget {
+class RoutineDetailScreen extends StatefulWidget {
   const RoutineDetailScreen({super.key, required this.routine});
 
   final Routine routine;
 
   @override
+  State<RoutineDetailScreen> createState() => _RoutineDetailScreenState();
+}
+
+class _RoutineDetailScreenState extends State<RoutineDetailScreen> with TickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFF080C14); // Azul oscuro profundo
-    final cardColor = const Color(0xFF101A2B); // Azul grisáceo oscuro
-    final accent = const Color.fromARGB(255, 40, 80, 94); // Azul neón
-    final accentSecondary = const Color(0xFF001F3F); // Azul navy
-    final glow = accent.withOpacity(0.25); // Efecto neón sutil
-    final appBarColor = const Color(0xFF0D1220); // AppBar oscuro azulado
+    final bgColor = const Color(0xFF080C14);
+    final cardColor = const Color(0xFF101A2B);
+    final accent = const Color.fromARGB(255, 40, 80, 94);
+    final accentSecondary = const Color(0xFF001F3F);
+    final glow = accent.withOpacity(0.25);
+    final appBarColor = const Color(0xFF0D1220);
+
+    final routine = widget.routine;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -41,24 +65,30 @@ class RoutineDetailScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.white70),
                 ),
               )
-            : ListView.separated(
-                separatorBuilder: (_, __) => const SizedBox(height: 14),
+            : ListView.builder(
                 itemCount: routine.exercises.length,
                 itemBuilder: (context, index) {
                   final ex = routine.exercises[index];
-                  return TweenAnimationBuilder<double>(
-                    duration: Duration(milliseconds: 400 + index * 100),
-                    tween: Tween(begin: 0, end: 1),
-                    builder: (context, value, child) {
+                  final delay = (index + 1) * 0.1;
+                  final curved = CurvedAnimation(
+                    parent: _controller,
+                    curve: Interval(delay.clamp(0.0, 1.0), 1.0, curve: Curves.easeOut),
+                  );
+
+                  return AnimatedBuilder(
+                    animation: curved,
+                    builder: (context, child) {
+                      final offsetY = 20 * (1 - curved.value);
                       return Opacity(
-                        opacity: value,
-                        child: Transform.scale(
-                          scale: value,
+                        opacity: curved.value,
+                        child: Transform.translate(
+                          offset: Offset(0, offsetY),
                           child: child,
                         ),
                       );
                     },
                     child: Container(
+                      margin: const EdgeInsets.only(bottom: 14),
                       decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: BorderRadius.circular(16),
@@ -79,8 +109,7 @@ class RoutineDetailScreen extends StatelessWidget {
                           height: 44,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border:
-                                Border.all(color: accentSecondary, width: 2),
+                            border: Border.all(color: accentSecondary, width: 2),
                             gradient: LinearGradient(
                               colors: [accent, accentSecondary],
                               begin: Alignment.topLeft,

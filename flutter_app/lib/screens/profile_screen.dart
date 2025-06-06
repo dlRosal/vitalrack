@@ -18,9 +18,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with TickerProviderStateMixin {
   File? _pickedImage;
   final ImagePicker _picker = ImagePicker();
+
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -28,10 +32,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (pickedFile != null) {
       setState(() {
         _pickedImage = File(pickedFile.path);
-        // Nota: si quieres subirla al servidor, deberías
-        // implementar aquí la llamada a algún endpoint /upload-avatar.
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String generoLegible(String? gender) {
+    if (gender == 'male') return 'Hombre';
+    if (gender == 'female') return 'Mujer';
+    return '—';
   }
 
   @override
@@ -41,13 +77,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isLoading = authState.loading;
     final token = authState.token;
 
-    String generoLegible(String? gender) {
-      if (gender == 'male')   return 'Hombre';
-      if (gender == 'female') return 'Mujer';
-    return '—';
-    }
-
-    // Si no hay token o usuario cargado, redirigimos a Login
     if (token == null || user == null) {
       Future.microtask(() {
         Navigator.of(context).pushReplacement(
@@ -87,96 +116,112 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 700),
           child: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: Colors.tealAccent))
+              ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
               : Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ListView(
-                    children: [
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.tealAccent.withOpacity(0.4),
-                                blurRadius: 20,
-                                spreadRadius: 2,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: ListView(
+                      children: [
+                        ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.tealAccent.withOpacity(0.4),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundColor: const Color(0xFF263238),
-                            backgroundImage: _pickedImage != null
-                                ? FileImage(_pickedImage!)
-                                : null,
-                            child: _pickedImage == null
-                                ? Text(
-                                    // Si el usuario no tiene nombre, muestro la primera letra del email
-                                    user.username.isNotEmpty
-                                        ? user.username[0].toUpperCase()
-                                        : user.email[0].toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 40,
-                                      color: Colors.tealAccent,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildInfoTile(
-                        'Usuario',
-                        user.username.isNotEmpty ? user.username : '—',
-                      ),
-                      _buildInfoTile('Correo electrónico', user.email),
-                      _buildInfoTile('Género', generoLegible(user.gender) ?? '—'),
-                      _buildInfoTile(
-                          'Edad', user.age != null ? '${user.age} años' : '—'),
-                      _buildInfoTile('Altura',
-                          user.height != null ? '${user.height} cm' : '—'),
-                      _buildInfoTile(
-                          'Peso', user.weight != null ? '${user.weight} kg' : '—'),
-                      const SizedBox(height: 32),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.edit, color: Colors.black),
-                        label: const Text(
-                          'Editar Perfil',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.tealAccent,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 8,
-                          shadowColor: Colors.tealAccent.withOpacity(0.6),
-                        ),
-                        onPressed: () async {
-                          // Navegamos a edición, pasando el usuario actual
-                          final updatedUser = await Navigator.push<User>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  EditProfileScreen(initialUser: user),
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: const Color(0xFF263238),
+                                backgroundImage: _pickedImage != null
+                                    ? FileImage(_pickedImage!)
+                                    : null,
+                                child: _pickedImage == null
+                                    ? Text(
+                                        user.username.isNotEmpty
+                                            ? user.username[0].toUpperCase()
+                                            : user.email[0].toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 40,
+                                          color: Colors.tealAccent,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : null,
+                              ),
                             ),
-                          );
-                          // Si volvió un usuario actualizado, recargamos el estado
-                          if (updatedUser != null) {
-                            await ref.read(authProvider.notifier).loadUser();
-                          }
-                        },
-                      ),
-                    ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _animatedTile(0, 'Usuario', user.username.isNotEmpty ? user.username : '—'),
+                        _animatedTile(1, 'Correo electrónico', user.email),
+                        _animatedTile(2, 'Género', generoLegible(user.gender)),
+                        _animatedTile(3, 'Edad', user.age != null ? '${user.age} años' : '—'),
+                        _animatedTile(4, 'Altura', user.height != null ? '${user.height} cm' : '—'),
+                        _animatedTile(5, 'Peso', user.weight != null ? '${user.weight} kg' : '—'),
+                        const SizedBox(height: 32),
+                        ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.edit, color: Colors.black),
+                            label: const Text(
+                              'Editar Perfil',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.tealAccent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 8,
+                              shadowColor: Colors.tealAccent.withOpacity(0.6),
+                            ),
+                            onPressed: () async {
+                              final updatedUser = await Navigator.push<User>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      EditProfileScreen(initialUser: user),
+                                ),
+                              );
+                              if (updatedUser != null) {
+                                await ref.read(authProvider.notifier).loadUser();
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
         ),
       ),
+    );
+  }
+
+  Widget _animatedTile(int index, String label, String value) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final delay = (index + 1) * 0.1;
+        final animationValue = (_controller.value - delay).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: animationValue,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - animationValue)),
+            child: _buildInfoTile(label, value),
+          ),
+        );
+      },
     );
   }
 
