@@ -187,7 +187,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
               ElevatedButton(
                 onPressed: state.loading ? null : _saveSession,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyanAccent.shade400,
+                  backgroundColor: const Color.fromARGB(255, 11, 6, 61),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
