@@ -84,4 +84,13 @@ class TrainingService {
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     return List<Map<String, dynamic>>.from(json['sessions'] as List);
   }
+  
+  /// Elimina una rutina existente
+  Future<void> deleteRoutine(String id) async {
+    final uri = Uri.parse('$_baseUrl/training/routines/$id');
+    final response = await http.delete(uri, headers: _headers);
+    if (response.statusCode != 204) {
+      throw Exception('Error al eliminar rutina: ${response.body}');
+    }
+  }
 }

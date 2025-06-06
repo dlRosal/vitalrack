@@ -172,3 +172,30 @@ export const listSessions = async (
     next(err);
   }
 };
+
+/**
+ * DELETE /training/routines/:id
+ */
+export const deleteRoutine = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ msg: 'No autorizado' });
+      return;
+    }
+
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) {
+      res.status(400).json({ msg: 'ID inválido' });
+      return;
+    }
+
+    await Routine.deleteOne({ _id: id, userId: req.userId });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};

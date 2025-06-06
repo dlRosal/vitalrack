@@ -5,6 +5,7 @@ import {
   listRoutines,
   logSession,
   listSessions,
+  deleteRoutine,
 } from '../controllers/trainingController';
 import { requireAuth } from '../middlewares/auth';
 
@@ -14,5 +15,6 @@ router.post('/generate', requireAuth, generateRoutine);
 router.get('/routines', requireAuth, listRoutines);
 router.post('/log', requireAuth, logSession);
 router.get('/sessions', requireAuth, listSessions);
+router.delete('/routines/:id', requireAuth, deleteRoutine);
 
 export default router;
