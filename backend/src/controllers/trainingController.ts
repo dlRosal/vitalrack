@@ -7,7 +7,7 @@ import { AuthRequest } from '../middlewares/auth';
 
 /**
  * POST /training/generate
- * Body: { name: string, level: 'beginner'|'intermediate'|'advanced' }
+ * Body: { name: string, level: 'push'|'pull'|'leg' }
  */
 export const generateRoutine = async (
   req: AuthRequest,
@@ -21,27 +21,51 @@ export const generateRoutine = async (
     }
 
     const { name, level } = req.body as { name: string; level: string };
-    if (typeof name !== 'string' || !['beginner', 'intermediate', 'advanced'].includes(level)) {
+    if (typeof name !== 'string' || !['push', 'pull', 'leg'].includes(level)) {
       res.status(400).json({ msg: 'name y level válidos son obligatorios' });
       return;
     }
 
-    // Lógica simple de ejemplo: full-body con 3 ejercicios
-    const exercises: IExercise[] = [
-      { name: 'Sentadillas', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Press de banca', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Remo con mancuerna', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Peso muerto', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Press militar', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Dominadas', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Fondos', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Curl de bíceps', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Extensiones de tríceps', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Elevaciones laterales', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Abdominales', sets: 3, reps: level === 'beginner' ? 8 : 12, restSec: 60 },
-      { name: 'Plancha', sets: 3, reps: level === 'beginner' ? 30 : 60, restSec: 60 },
-      { name: 'Cardio', sets: 1, reps: level === 'beginner' ? 20 : 30, restSec: 60 },
-    ];
+    let exercises: IExercise[] = [];
+
+    switch (level) {
+      case 'push':
+        exercises = [
+          { name: 'Press de banca plano', sets: 4, reps: 8, restSec: 90 },
+          { name: 'Press militar con barra', sets: 4, reps: 8, restSec: 90 },
+          { name: 'Fondos en paralelas', sets: 3, reps: 10, restSec: 60 },
+          { name: 'Press inclinado con mancuernas', sets: 3, reps: 10, restSec: 60 },
+          { name: 'Elevaciones laterales con mancuernas', sets: 3, reps: 15, restSec: 45 },
+          { name: 'Press Arnold', sets: 3, reps: 12, restSec: 60 },
+          { name: 'Extensiones de tríceps en polea alta', sets: 3, reps: 15, restSec: 45 },
+          { name: 'Patada de tríceps con mancuerna', sets: 3, reps: 12, restSec: 45 },
+        ];
+        break;
+      case 'pull':
+        exercises = [
+          { name: 'Peso muerto convencional', sets: 4, reps: 6, restSec: 120 },
+          { name: 'Dominadas pronadas', sets: 3, reps: 10, restSec: 60 },
+          { name: 'Remo con barra', sets: 3, reps: 10, restSec: 60 },
+          { name: 'Remo en máquina', sets: 3, reps: 12, restSec: 60 },
+          { name: 'Curl de bíceps con barra', sets: 3, reps: 12, restSec: 45 },
+          { name: 'Curl martillo con mancuernas', sets: 3, reps: 12, restSec: 45 },
+          { name: 'Face pulls (jalones a la cara)', sets: 3, reps: 15, restSec: 45 },
+          { name: 'Encogimientos de trapecio con barra', sets: 3, reps: 15, restSec: 30 },
+        ];
+        break;
+      case 'leg':
+        exercises = [
+          { name: 'Sentadillas traseras', sets: 4, reps: 8, restSec: 90 },
+          { name: 'Prensa de piernas', sets: 4, reps: 10, restSec: 90 },
+          { name: 'Zancadas con mancuernas', sets: 3, reps: 12, restSec: 60 },
+          { name: 'Peso muerto rumano', sets: 3, reps: 10, restSec: 60 },
+          { name: 'Elevaciones de talones (gemelos)', sets: 4, reps: 20, restSec: 30 },
+          { name: 'Curl femoral en máquina', sets: 3, reps: 12, restSec: 45 },
+          { name: 'Extensión de piernas en máquina', sets: 3, reps: 12, restSec: 45 },
+          { name: 'Hip thrust con barra', sets: 3, reps: 10, restSec: 60 },
+        ];
+        break;
+    }
 
     const routine = await Routine.create({
       userId: new Types.ObjectId(req.userId),

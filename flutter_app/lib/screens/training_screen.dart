@@ -16,7 +16,7 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final TextEditingController _nameController = TextEditingController();
-  String _level = 'beginner';
+  String _level = 'push';
 
   @override
   void initState() {
@@ -442,9 +442,9 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
             fontWeight: FontWeight.w500,
           ),
           items: [
-            _buildDropdownItem('beginner', 'Principiante'),
-            _buildDropdownItem('intermediate', 'Intermedio'),
-            _buildDropdownItem('advanced', 'Avanzado'),
+            _buildDropdownItem('push', 'Pecho | Triceps | Hombro'),
+            _buildDropdownItem('pull', 'Espalda | Biceps'),
+            _buildDropdownItem('leg', 'Pierna'),
           ],
           onChanged: (value) {
             if (value != null) {
