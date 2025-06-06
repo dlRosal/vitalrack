@@ -252,8 +252,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
 
             // Texto explicativo sutil
             const Text(
-              'Selecciona alimentos para añadirlos a tu dieta. '
-              'Se contabilizan calorías, proteínas, carbohidratos y grasas consumidas.',
+              'Busca y registra tus alimentos diarios consumidos.',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
@@ -305,7 +304,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                               padding:
                                   const EdgeInsets.only(top: 6.0),
                               child: Text(
-                                'Cal: ${food.calories} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
+                                'Kcal: ${food.calories} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 14,
@@ -326,7 +325,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                   : _hasSearched && !state.loading
                       ? const Center(
                           child: Text(
-                            'Sin resultados para esa búsqueda',
+                            'Sin resultados para esa búsqueda.',
                             style: TextStyle(color: Colors.white70),
                           ),
                         )
@@ -361,7 +360,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                                   padding:
                                       const EdgeInsets.only(top: 6.0),
                                   child: Text(
-                                    'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)}',
+                                    'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
                                     style: const TextStyle(
                                       color: Colors.white70,
                                       fontSize: 14,
@@ -595,9 +594,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text('P: ${p.toStringAsFixed(0)}', style: style),
-        Text('C: ${c.toStringAsFixed(0)}', style: style),
-        Text('G: ${f.toStringAsFixed(0)}', style: style),
+        Text('Proteínas: ${p.toStringAsFixed(0)}', style: style),
+        Text('Carbohidratos: ${c.toStringAsFixed(0)}', style: style),
+        Text('Grasas: ${f.toStringAsFixed(0)}', style: style),
       ],
     );
   }
