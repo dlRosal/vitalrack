@@ -187,13 +187,13 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
               ElevatedButton(
                 onPressed: state.loading ? null : _saveSession,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 11, 6, 61),
+                  backgroundColor: const Color.fromARGB(255, 1, 58, 133),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                   elevation: 12,
-                  shadowColor: Colors.cyanAccent.withOpacity(0.6),
+                  shadowColor: const Color.fromARGB(255, 24, 170, 255).withOpacity(0.6),
                 ),
                 child: state.loading
                     ? const SizedBox(
