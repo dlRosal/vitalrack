@@ -7,9 +7,31 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   String? _hoveredOption;
   bool _isProfileHovered = false;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,38 +93,41 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 150, // un poco más pequeño para subir contenido
-                      child: Image.asset('assets/logosinfondo.png'),
-                    ),
-                    const SizedBox(height: 16), // menos espacio aquí
-                    _buildOptionCard(
-                      context,
-                      title: 'Nutrición',
-                      icon: Icons.restaurant_menu_rounded,
-                      color: const Color(0xFF2F855A),
-                      route: '/nutrition',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildOptionCard(
-                      context,
-                      title: 'Entrenamiento',
-                      icon: Icons.fitness_center_rounded,
-                      color: const Color(0xFF2C5282),
-                      route: '/training',
-                    ),
-                  ],
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: Image.asset('assets/logosinfondo.png'),
+                      ),
+                      const SizedBox(height: 32),
+                      _buildOptionCard(
+                        context,
+                        title: 'Nutrición',
+                        icon: Icons.restaurant_menu_rounded,
+                        color: const Color(0xFF2F855A),
+                        route: '/nutrition',
+                      ),
+                      const SizedBox(height: 28),
+                      _buildOptionCard(
+                        context,
+                        title: 'Entrenamiento',
+                        icon: Icons.fitness_center_rounded,
+                        color: const Color(0xFF2C5282),
+                        route: '/training',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -128,23 +153,22 @@ class _HomeScreenState extends State<HomeScreen> {
       onExit: (_) => setState(() => _hoveredOption = null),
       cursor: SystemMouseCursors.click,
       child: AnimatedScale(
-        scale: isHovered ? 1.04 : 1.0,
+        scale: isHovered ? 1.05 : 1.0,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 28),
           decoration: BoxDecoration(
-            color: Color.lerp(const Color(0xFF1E1E1E), color.withOpacity(0.12), isHovered ? 1 : 0),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             gradient: isHovered
                 ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      color.withOpacity(0.15),
-                      color.withOpacity(0.10),
+                      color.withOpacity(0.2),
+                      color.withOpacity(0.1),
                       color.withOpacity(0.05),
                     ],
                   )
@@ -154,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     colors: [
                       const Color(0xFF1E1E1E),
                       const Color(0xFF1C1C1C),
-                      color.withOpacity(0.05),
+                      color.withOpacity(0.04),
                     ],
                   ),
             border: Border.all(
@@ -164,44 +188,44 @@ class _HomeScreenState extends State<HomeScreen> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(isHovered ? 0.8 : 0.6),
-                blurRadius: isHovered ? 28 : 20,
-                offset: const Offset(0, 10),
+                blurRadius: isHovered ? 30 : 22,
+                offset: const Offset(0, 12),
               ),
               BoxShadow(
-                color: color.withOpacity(isHovered ? 0.3 : 0.15),
-                blurRadius: isHovered ? 40 : 30,
+                color: color.withOpacity(isHovered ? 0.35 : 0.2),
+                blurRadius: isHovered ? 45 : 35,
                 offset: const Offset(0, 0),
               ),
             ],
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             splashColor: color.withOpacity(0.3),
             highlightColor: color.withOpacity(0.15),
             onTap: () => Navigator.pushNamed(context, route),
             child: Row(
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: borderColor, width: 2),
+                    border: Border.all(color: borderColor, width: 2.5),
                   ),
                   alignment: Alignment.center,
-                  child: Icon(icon, size: 36, color: iconColor),
+                  child: Icon(icon, size: 40, color: iconColor),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 28),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 20, color: Colors.grey),
               ],
             ),
           ),
