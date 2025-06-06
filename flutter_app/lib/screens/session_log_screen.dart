@@ -104,6 +104,7 @@ class _SessionLogScreenState extends ConsumerState<SessionLogScreen>
         backgroundColor: _mainColor,
         elevation: 0,
         toolbarHeight: 100,
+        centerTitle: true,
         title: Text(
           'Sesión: ${widget.routine.name}',
           style: const TextStyle(
