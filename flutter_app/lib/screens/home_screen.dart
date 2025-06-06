@@ -84,58 +84,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   constraints: const BoxConstraints(maxWidth: 600),
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Logo con glow animado
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              RotationTransition(
-                                turns: Tween(begin: 0.0, end: 1.0)
-                                    .animate(CurvedAnimation(parent: _bgParticlesController, curve: Curves.linear)),
-                                child: Container(
-                                  width: 200,
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Colors.blueAccent.withOpacity(0.1),
-                                        Colors.transparent,
-                                      ],
-                                      stops: const [0.4, 1.0],
-                                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Logo con glow animado
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            RotationTransition(
+                              turns: Tween(begin: 0.0, end: 1.0)
+                                  .animate(CurvedAnimation(parent: _bgParticlesController, curve: Curves.linear)),
+                              child: Container(
+                                width: 260,
+                                height: 260,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.blueAccent.withOpacity(0.1),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.4, 1.0],
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                height: 160,
-                                child: Image.asset('assets/logosinfondo.png'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          _buildOptionCard(
-                            context,
-                            title: 'Nutrición',
-                            icon: Icons.restaurant_menu_rounded,
-                            color: const Color(0xFF2F855A),
-                            route: '/nutrition',
-                          ),
-                          const SizedBox(height: 28),
-                          _buildOptionCard(
-                            context,
-                            title: 'Entrenamiento',
-                            icon: Icons.fitness_center_rounded,
-                            color: const Color(0xFF2C5282),
-                            route: '/training',
-                          ),
-                        ],
-                      ),
+                            ),
+                            SizedBox(
+                              height: 200,
+                              child: Image.asset('assets/logosinfondo.png'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        _buildOptionCard(
+                          context,
+                          title: 'Nutrición',
+                          icon: Icons.restaurant_menu_rounded,
+                          color: const Color(0xFF2F855A),
+                          route: '/nutrition',
+                        ),
+                        const SizedBox(height: 28),
+                        _buildOptionCard(
+                          context,
+                          title: 'Entrenamiento',
+                          icon: Icons.fitness_center_rounded,
+                          color: const Color(0xFF2C5282),
+                          route: '/training',
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -1,4 +1,3 @@
-// flutter_app/lib/screens/edit_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
@@ -13,11 +12,11 @@ class EditProfileScreen extends ConsumerStatefulWidget {
       : super(key: key);
 
   @override
-  ConsumerState<EditProfileScreen> createState() =>
-      _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _usernameController;
   String? _selectedGender;
   late TextEditingController _ageController;
@@ -29,32 +28,41 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  late AnimationController _animController;
+  late Animation<Offset> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
     final u = widget.initialUser;
+
     _usernameController = TextEditingController(text: u.username);
-
-    // Inicializamos _selectedGender según valor de API ('male' o 'female')
-    if (u.gender == 'male' || u.gender == 'female') {
-      _selectedGender = u.gender;
-    } else {
-      _selectedGender = null;
-    }
-
+    _selectedGender = (u.gender == 'male' || u.gender == 'female') ? u.gender : null;
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
-    _heightController =
-        TextEditingController(text: u.height?.toString() ?? '');
-    _weightController =
-        TextEditingController(text: u.weight?.toString() ?? '');
-
-    // Inicializamos goal y trainingDays
+    _heightController = TextEditingController(text: u.height?.toString() ?? '');
+    _weightController = TextEditingController(text: u.weight?.toString() ?? '');
     _selectedGoal = u.goal;
     _trainingDays = u.trainingDays;
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    ));
+
+    _animController.forward();
   }
 
   @override
   void dispose() {
+    _animController.dispose();
     _usernameController.dispose();
     _ageController.dispose();
     _heightController.dispose();
@@ -120,6 +128,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: const Text('Editar Perfil'),
         backgroundColor: const Color(0xFF1F1F1F),
@@ -127,178 +136,166 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              children: [
-                // Campo de usuario
-                TextField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre de usuario',
-                    prefixIcon: Icon(Icons.person),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
+          child: AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              return AnimatedOpacity(
+                opacity: _animController.value,
+                duration: const Duration(milliseconds: 300),
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: child,
                 ),
-                const SizedBox(height: 12),
-
-                // Dropdown para género
-                DropdownButtonFormField<String>(
-                  value: _selectedGender,
-                  decoration: const InputDecoration(
-                    labelText: 'Género',
-                    prefixIcon: Icon(Icons.wc),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'male', child: Text('Hombre')),
-                    DropdownMenuItem(value: 'female', child: Text('Mujer')),
-                    DropdownMenuItem(value: 'other', child: Text('Otro')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedGender = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Edad
-                TextField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Edad',
-                    prefixIcon: Icon(Icons.cake),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 30',
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Altura
-                TextField(
-                  controller: _heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Altura (cm)',
-                    prefixIcon: Icon(Icons.height),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 175',
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Campo Peso
-                TextField(
-                  controller: _weightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Peso (kg)',
-                    prefixIcon: Icon(Icons.fitness_center),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                    hintText: 'Ej: 72.5',
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Objetivo (bulk, cut, maintain)
-                DropdownButtonFormField<String>(
-                  value: _selectedGoal,
-                  decoration: const InputDecoration(
-                    labelText: 'Objetivo',
-                    prefixIcon: Icon(Icons.flag),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'bulk', child: Text('Ganar volumen')),
-                    DropdownMenuItem(value: 'cut', child: Text('Definir')),
-                    DropdownMenuItem(value: 'maintain', child: Text('Mantener')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedGoal = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Días de entrenamiento por semana
-                DropdownButtonFormField<int>(
-                  value: _trainingDays,
-                  decoration: const InputDecoration(
-                    labelText: 'Días de entrenamiento/semana',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    filled: true,
-                    fillColor: Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: List.generate(
-                    7,
-                    (i) => DropdownMenuItem(
-                      value: i + 1,
-                      child: Text('${i + 1}'),
-                    ),
-                  ),
-                  onChanged: (val) {
-                    setState(() {
-                      _trainingDays = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                if (_errorMessage != null) ...[
-                  Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ListView(
+                children: [
+                  _buildTextField(_usernameController, 'Nombre de usuario', Icons.person),
                   const SizedBox(height: 12),
-                ],
-
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _saveChanges,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.tealAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  _buildDropdownGender(),
+                  const SizedBox(height: 12),
+                  _buildTextField(_ageController, 'Edad', Icons.cake, isNumber: true, hint: 'Ej: 30'),
+                  const SizedBox(height: 12),
+                  _buildTextField(_heightController, 'Altura (cm)', Icons.height, isNumber: true, hint: 'Ej: 175'),
+                  const SizedBox(height: 12),
+                  _buildTextField(_weightController, 'Peso (kg)', Icons.fitness_center, isNumber: true, hint: 'Ej: 72.5'),
+                  const SizedBox(height: 12),
+                  _buildDropdownGoal(),
+                  const SizedBox(height: 12),
+                  _buildDropdownTrainingDays(),
+                  const SizedBox(height: 20),
+                  if (_errorMessage != null) ...[
+                    AnimatedOpacity(
+                      opacity: 1,
+                      duration: const Duration(milliseconds: 300),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  ElevatedButton(
+                    onPressed: _isSubmitting ? null : _saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.tealAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Guardar cambios',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Guardar cambios',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon,
+      {bool isNumber = false, String? hint}) {
+    return TextField(
+      controller: controller,
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon),
+        filled: true,
+        fillColor: const Color(0xFF2A2A2A),
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _buildDropdownGender() {
+    return DropdownButtonFormField<String>(
+      value: _selectedGender,
+      decoration: const InputDecoration(
+        labelText: 'Género',
+        prefixIcon: Icon(Icons.wc),
+        filled: true,
+        fillColor: Color(0xFF2A2A2A),
+        border: OutlineInputBorder(),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'male', child: Text('Hombre')),
+        DropdownMenuItem(value: 'female', child: Text('Mujer')),
+        DropdownMenuItem(value: 'other', child: Text('Otro')),
+      ],
+      onChanged: (val) {
+        setState(() {
+          _selectedGender = val;
+        });
+      },
+    );
+  }
+
+  Widget _buildDropdownGoal() {
+    return DropdownButtonFormField<String>(
+      value: _selectedGoal,
+      decoration: const InputDecoration(
+        labelText: 'Objetivo',
+        prefixIcon: Icon(Icons.flag),
+        filled: true,
+        fillColor: Color(0xFF2A2A2A),
+        border: OutlineInputBorder(),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'bulk', child: Text('Ganar volumen')),
+        DropdownMenuItem(value: 'cut', child: Text('Definir')),
+        DropdownMenuItem(value: 'maintain', child: Text('Mantener')),
+      ],
+      onChanged: (val) {
+        setState(() {
+          _selectedGoal = val;
+        });
+      },
+    );
+  }
+
+  Widget _buildDropdownTrainingDays() {
+    return DropdownButtonFormField<int>(
+      value: _trainingDays,
+      decoration: const InputDecoration(
+        labelText: 'Días de entrenamiento/semana',
+        prefixIcon: Icon(Icons.calendar_today),
+        filled: true,
+        fillColor: Color(0xFF2A2A2A),
+        border: OutlineInputBorder(),
+      ),
+      items: List.generate(
+        7,
+        (i) => DropdownMenuItem(
+          value: i + 1,
+          child: Text('${i + 1}'),
+        ),
+      ),
+      onChanged: (val) {
+        setState(() {
+          _trainingDays = val;
+        });
+      },
     );
   }
 }
