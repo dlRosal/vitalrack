@@ -1,20 +1,33 @@
-// lib/providers/nutrition_provider.dart
+// flutter_app/lib/providers/nutrition_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/nutrition_service.dart';
 import '../models/food.dart';
+import '../models/consumption.dart';
 import 'auth_provider.dart'; // para acceder al token
 
-/// Estado de nutrición: resultados, carga y error
+/// Estado de nutrición: resultados, historial, carga y error
 class NutritionState {
   final List<Food> foods;
+  final List<Consumption> history;
   final bool loading;
   final String? error;
 
-  NutritionState({this.foods = const [], this.loading = false, this.error});
+  NutritionState({
+    this.foods = const [],
+    this.history = const [],
+    this.loading = false,
+    this.error,
+  });
 
-  NutritionState copyWith({List<Food>? foods, bool? loading, String? error}) {
+  NutritionState copyWith({
+    List<Food>? foods,
+    List<Consumption>? history,
+    bool? loading,
+    String? error,
+  }) {
     return NutritionState(
       foods: foods ?? this.foods,
+      history: history ?? this.history,
       loading: loading ?? this.loading,
       error: error,
     );
@@ -40,10 +53,28 @@ class NutritionNotifier extends StateNotifier<NutritionState> {
     state = state.copyWith(loading: true, error: null);
     try {
       await _service.logConsumption(foodId: foodId, quantity: qty);
-      state = state.copyWith(loading: false);
+      // Recargar historial tras registrar consumo
+      final historyList = await _service.fetchConsumptionHistory();
+      final items = historyList.map((e) => Consumption.fromJson(e)).toList();
+      state = state.copyWith(history: items, loading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), loading: false);
     }
+  }
+
+  Future<void> fetchHistory() async {
+    state = state.copyWith(loading: true, error: null);
+    try {
+      final historyList = await _service.fetchConsumptionHistory();
+      final items = historyList.map((e) => Consumption.fromJson(e)).toList();
+      state = state.copyWith(history: items, loading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
+    }
+  }
+
+  void clearFoods() {
+    state = state.copyWith(foods: []);
   }
 }
 

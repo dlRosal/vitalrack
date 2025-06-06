@@ -101,6 +101,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     int? age,
     double? height,
     double? weight,
+    String? goal,
+    int? trainingDays,
   }) async {
     final token = state.token;
     if (token == null) {
@@ -117,6 +119,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         age: age,
         height: height,
         weight: weight,
+        goal: goal,
+        trainingDays: trainingDays,
       );
       state = state.copyWith(user: updatedUser, loading: false);
     } catch (e) {

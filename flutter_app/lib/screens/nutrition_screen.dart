@@ -1,7 +1,10 @@
+// flutter_app/lib/screens/nutrition_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/nutrition_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/food.dart';
+import '../models/consumption.dart';
 
 class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
@@ -14,8 +17,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
     with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
 
-  // Supongamos que el máximo de calorías diarias es 2000 (puedes ajustar)
-  static const int maxCalories = 2000;
+  // Valor por defecto para el límite calórico si no hay datos
+  static const int defaultMaxCalories = 2000;
 
   late AnimationController _animationController;
 
@@ -28,6 +31,10 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
+
+    // Carga historial inicial
+    Future.microtask(
+        () => ref.read(nutritionProvider.notifier).fetchHistory());
   }
 
   @override
@@ -58,16 +65,47 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(nutritionProvider);
+    final user = ref.watch(authProvider).user;
 
     final bgColor = const Color(0xFF0A0F0A);
     final cardColor = const Color(0xFF131E17);
     final accent = const Color(0xFF4CAF50); // Verde vivo
 
-    // Obtiene el total de calorías consumidas del estado, o 0 si no existe
-    const totalCaloriesConsumed = 1500;
+    // Total de calorías consumidas
+    final totalCaloriesConsumed = state.history.fold<double>(
+        0, (sum, c) => sum + c.food.calories * c.quantity / 100);
+
+    // Cálculo simple de calorías diarias según perfil
+    int maxCalories = defaultMaxCalories;
+    if (user != null &&
+        user.weight != null &&
+        user.height != null &&
+        user.age != null) {
+      double bmr = 10 * user.weight! + 6.25 * user.height! - 5 * user.age!;
+      if (user.gender == 'male') {
+        bmr += 5;
+      } else {
+        bmr -= 161;
+      }
+      double activity = 1.2;
+      final days = user.trainingDays ?? 3;
+      if (days >= 5) {
+        activity = 1.725;
+      } else if (days >= 3) {
+        activity = 1.55;
+      } else if (days >= 1) {
+        activity = 1.375;
+      }
+      double goalFactor = 1.0;
+      if (user.goal == 'bulk') goalFactor = 1.1;
+      if (user.goal == 'cut') goalFactor = 0.9;
+
+      maxCalories = (bmr * activity * goalFactor).round();
+    }
 
     // Calcula el progreso para la barra, limitado a 1.0
-    final progress = (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
+    final progress =
+        (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -117,6 +155,16 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
                         ),
+                        suffixIcon: IconButton(
+                          icon:
+                              const Icon(Icons.clear, color: Colors.white70),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref
+                                .read(nutritionProvider.notifier)
+                                .clearFoods();
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -152,7 +200,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
 
             const SizedBox(height: 12),
 
-            // Texto explicativo sutil, en tono blanco con opacidad y letra pequeña
+            // Texto explicativo sutil
             const Text(
               'Selecciona alimentos para añadirlos a tu dieta. '
               'Se contabilizan calorías, proteínas, carbohidratos y grasas consumidas.',
@@ -177,49 +225,93 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
 
             const SizedBox(height: 12),
 
-            // Listado de alimentos, ocupa espacio flexible
+            // Listado de alimentos o historial
             Expanded(
-              child: ListView.builder(
-                itemCount: state.foods.length,
-                itemBuilder: (context, index) {
-                  final Food food = state.foods[index];
-                  return Card(
-                    color: cardColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 10,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      title: Text(
-                        food.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: Text(
-                          'Cal: ${food.calories} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
+              child: state.foods.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: state.foods.length,
+                      itemBuilder: (context, index) {
+                        final Food food = state.foods[index];
+                        return Card(
+                          color: cardColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.add_circle, color: accent, size: 32),
-                        tooltip: 'Añadir consumo',
-                        onPressed: () => _logConsumption(food.id),
-                      ),
+                          elevation: 10,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                            title: Text(
+                              food.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                'Cal: ${food.calories} | Prot: ${food.protein}g | Carb: ${food.carbs}g | Grasa: ${food.fat}g',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(Icons.add_circle,
+                                  color: accent, size: 32),
+                              tooltip: 'Añadir consumo',
+                              onPressed: () =>
+                                  _logConsumption(food.id),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : ListView.builder(
+                      itemCount: state.history.length,
+                      itemBuilder: (context, index) {
+                        final item = state.history[index];
+                        final food = item.food;
+                        return Card(
+                          color: cardColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 10,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                            title: Text(
+                              food.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
 
             const SizedBox(height: 12),
@@ -229,7 +321,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
               animation: _animationController,
               builder: (context, child) {
                 // Para el brillo animado: un valor que va de -1 a 2 para el gradiente animado
-                final animationValue = _animationController.value * 3 - 1;
+                final animationValue =
+                    _animationController.value * 3 - 1;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,7 +347,11 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                     const SizedBox(height: 10),
                     // Barra con brillo y pulso
                     Transform.scale(
-                      scale: 1 + 0.05 * (1 - (progress - 0.5).abs() * 2),
+                      scale: 1 +
+                          0.05 *
+                              (1 -
+                                  (progress - 0.5).abs() *
+                                      2),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Stack(
@@ -262,7 +359,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                             Container(
                               height: 25,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius:
+                                    BorderRadius.circular(20),
                                 color: Colors.grey[800],
                                 boxShadow: const [
                                   BoxShadow(
@@ -278,20 +376,27 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                               builder: (context, constraints) {
                                 return Container(
                                   height: 25,
-                                  width: constraints.maxWidth * progress,
+                                  width: constraints.maxWidth *
+                                      progress,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius:
+                                        BorderRadius.circular(20),
                                     gradient: LinearGradient(
                                       colors: const [
                                         Color(0xFF76FF03),
                                         Color(0xFF64DD17),
                                         Color(0xFF33691E),
                                       ],
-                                      stops: const [0.0, 0.7, 1.0],
+                                      stops: const [
+                                        0.0,
+                                        0.7,
+                                        1.0
+                                      ],
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.greenAccent.withOpacity(0.6),
+                                        color: Colors.greenAccent
+                                            .withOpacity(0.6),
                                         blurRadius: 12,
                                         spreadRadius: 1,
                                         offset: const Offset(0, 0),
@@ -301,19 +406,31 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                                   child: ShaderMask(
                                     shaderCallback: (rect) {
                                       return LinearGradient(
-                                        begin: Alignment(-1 + animationValue, 0),
-                                        end: Alignment(animationValue, 0),
+                                        begin: Alignment(
+                                            -1 + animationValue,
+                                            0),
+                                        end: Alignment(
+                                            animationValue, 0),
                                         colors: [
-                                          Colors.white.withOpacity(0.2),
-                                          Colors.white.withOpacity(0.8),
-                                          Colors.white.withOpacity(0.2),
+                                          Colors.white
+                                              .withOpacity(0.2),
+                                          Colors.white
+                                              .withOpacity(0.8),
+                                          Colors.white
+                                              .withOpacity(0.2),
                                         ],
-                                        stops: const [0.4, 0.5, 0.6],
+                                        stops: const [
+                                          0.4,
+                                          0.5,
+                                          0.6
+                                        ],
                                       ).createShader(rect);
                                     },
-                                    blendMode: BlendMode.lighten,
+                                    blendMode:
+                                        BlendMode.lighten,
                                     child: Container(
-                                      color: Colors.white.withOpacity(0.15),
+                                      color: Colors.white
+                                          .withOpacity(0.15),
                                     ),
                                   ),
                                 );
@@ -324,7 +441,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                               child: CustomPaint(
                                 painter: _SparklePainter(
                                   progress: progress,
-                                  animationValue: animationValue,
+                                  animationValue:
+                                      animationValue,
                                 ),
                               ),
                             ),
@@ -348,7 +466,10 @@ class _SparklePainter extends CustomPainter {
   final double progress;
   final double animationValue;
 
-  _SparklePainter({required this.progress, required this.animationValue});
+  _SparklePainter({
+    required this.progress,
+    required this.animationValue,
+  });
 
   final _sparklePaint = Paint()
     ..color = Colors.white.withOpacity(0.8)
@@ -374,7 +495,8 @@ class _SparklePainter extends CustomPainter {
 
       final y = height / 2 +
           (3 * (i.isEven ? 1 : -1)) *
-              (0.5 - (animationValue - i / sparkleCount).abs()).abs();
+              (0.5 - (animationValue - i / sparkleCount).abs())
+                  .abs();
 
       // Dibuja círculo brillo
       canvas.drawCircle(Offset(x, y), sparkleRadius, _sparklePaint);

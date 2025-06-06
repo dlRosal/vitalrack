@@ -1,4 +1,4 @@
-// lib/screens/edit_profile_screen.dart
+// flutter_app/lib/screens/edit_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
@@ -9,10 +9,12 @@ import 'login_screen.dart';
 class EditProfileScreen extends ConsumerStatefulWidget {
   final User initialUser;
 
-  const EditProfileScreen({Key? key, required this.initialUser}) : super(key: key);
+  const EditProfileScreen({Key? key, required this.initialUser})
+      : super(key: key);
 
   @override
-  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() =>
+      _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
@@ -21,6 +23,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _ageController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
+  String? _selectedGoal;
+  int? _trainingDays;
 
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -31,16 +35,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final u = widget.initialUser;
     _usernameController = TextEditingController(text: u.username);
 
-    // Inicializamos _selectedGender solo si el valor viene como 'Hombre' o 'Mujer'.
-    if (u.gender == 'Hombre' || u.gender == 'Mujer') {
+    // Inicializamos _selectedGender según valor de API ('male' o 'female')
+    if (u.gender == 'male' || u.gender == 'female') {
       _selectedGender = u.gender;
     } else {
       _selectedGender = null;
     }
 
     _ageController = TextEditingController(text: u.age?.toString() ?? '');
-    _heightController = TextEditingController(text: u.height?.toString() ?? '');
-    _weightController = TextEditingController(text: u.weight?.toString() ?? '');
+    _heightController =
+        TextEditingController(text: u.height?.toString() ?? '');
+    _weightController =
+        TextEditingController(text: u.weight?.toString() ?? '');
+
+    // Inicializamos goal y trainingDays
+    _selectedGoal = u.goal;
+    _trainingDays = u.trainingDays;
   }
 
   @override
@@ -79,6 +89,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final weight = _weightController.text.trim().isEmpty
           ? null
           : double.tryParse(_weightController.text.trim());
+      final goal = _selectedGoal;
+      final trainingDays = _trainingDays;
 
       final authService = ref.read(authServiceProvider);
       final updatedUser = await authService.updateProfile(
@@ -88,6 +100,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         age: age,
         height: height,
         weight: weight,
+        goal: goal,
+        trainingDays: trainingDays,
       );
 
       if (!mounted) return;
@@ -143,6 +157,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   items: const [
                     DropdownMenuItem(value: 'male', child: Text('Hombre')),
                     DropdownMenuItem(value: 'female', child: Text('Mujer')),
+                    DropdownMenuItem(value: 'other', child: Text('Otro')),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -194,6 +209,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     border: OutlineInputBorder(),
                     hintText: 'Ej: 72.5',
                   ),
+                ),
+                const SizedBox(height: 12),
+
+                // Objetivo (bulk, cut, maintain)
+                DropdownButtonFormField<String>(
+                  value: _selectedGoal,
+                  decoration: const InputDecoration(
+                    labelText: 'Objetivo',
+                    prefixIcon: Icon(Icons.flag),
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'bulk', child: Text('Ganar volumen')),
+                    DropdownMenuItem(value: 'cut', child: Text('Definir')),
+                    DropdownMenuItem(value: 'maintain', child: Text('Mantener')),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedGoal = val;
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Días de entrenamiento por semana
+                DropdownButtonFormField<int>(
+                  value: _trainingDays,
+                  decoration: const InputDecoration(
+                    labelText: 'Días de entrenamiento/semana',
+                    prefixIcon: Icon(Icons.calendar_today),
+                    filled: true,
+                    fillColor: Color(0xFF2A2A2A),
+                    border: OutlineInputBorder(),
+                  ),
+                  items: List.generate(
+                    7,
+                    (i) => DropdownMenuItem(
+                      value: i + 1,
+                      child: Text('${i + 1}'),
+                    ),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _trainingDays = val;
+                    });
+                  },
                 ),
                 const SizedBox(height: 20),
 

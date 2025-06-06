@@ -7,8 +7,10 @@ export interface IUser extends Document {
   username?: string;
   gender?: 'male' | 'female' | 'other';
   age?: number;
-  height?: number; // en centímetros, p. ej.
-  weight?: number; // en kilogramos, p. ej.
+  height?: number; // en centímetros
+  weight?: number; // en kilogramos
+  goal?: 'bulk' | 'cut' | 'maintain';
+  trainingDays?: number;
   password: string;
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -48,16 +50,32 @@ const UserSchema = new Schema<IUser>(
       required: false,
       min: 0,
     },
+    goal: {
+      type: String,
+      required: false,
+      enum: ['bulk', 'cut', 'maintain'],
+      default: 'maintain',
+    },
+    trainingDays: {
+      type: Number,
+      required: false,
+      min: 0,
+      max: 7,
+      default: 3,
+    },
     password: {
       type: String,
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-// Índice único en email
-UserSchema.index({ email: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+// Índice único en email (sin distinción de mayúsculas/minúsculas)
+UserSchema.index(
+  { email: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } }
+);
 
 // Antes de guardar, hashear la contraseña si cambió
 UserSchema.pre<IUser>('save', async function (next) {
@@ -72,7 +90,10 @@ UserSchema.pre<IUser>('save', async function (next) {
 });
 
 // Método para comparar contraseñas
-UserSchema.methods.comparePassword = function (this: IUser, candidate: string) {
+UserSchema.methods.comparePassword = function (
+  this: IUser,
+  candidate: string
+): Promise<boolean> {
   return bcrypt.compare(candidate, this.password);
 };
 

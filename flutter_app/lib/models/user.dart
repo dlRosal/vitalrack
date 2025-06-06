@@ -7,6 +7,8 @@ class User {
   final int? age;
   final double? height;
   final double? weight;
+  final String? goal;
+  final int? trainingDays;
 
   User({
     required this.id,
@@ -16,6 +18,8 @@ class User {
     this.age,
     this.height,
     this.weight,
+    this.goal,
+    this.trainingDays,
   });
 
   /// Deserializa desde el JSON que devuelve GET /auth/me
@@ -28,6 +32,10 @@ class User {
       age: json['age'] != null ? (json['age'] as num).toInt() : null,
       height: json['height'] != null ? (json['height'] as num).toDouble() : null,
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      goal: json['goal'] as String?,
+      trainingDays: json['trainingDays'] != null
+          ? (json['trainingDays'] as num).toInt()
+          : null,
     );
   }
 
@@ -39,6 +47,8 @@ class User {
       if (age != null) 'age': age,
       if (height != null) 'height': height,
       if (weight != null) 'weight': weight,
+      if (goal != null) 'goal': goal,
+      if (trainingDays != null) 'trainingDays': trainingDays,
     };
   }
 }

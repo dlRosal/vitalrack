@@ -79,6 +79,8 @@ class AuthService {
   int? age,
   double? height,
   double? weight,
+  String? goal,
+  int? trainingDays,
 }) async {
   final uri = Uri.parse('$_baseUrl/me');
   final body = {
@@ -87,6 +89,8 @@ class AuthService {
     if (age != null) 'age': age,
     if (height != null) 'height': height,
     if (weight != null) 'weight': weight,
+    if (goal != null) 'goal': goal,
+    if (trainingDays != null) 'trainingDays': trainingDays,
   };
   final response = await http.put(
     uri,

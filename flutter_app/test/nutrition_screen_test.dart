@@ -39,6 +39,14 @@ class FakeNutritionNotifier extends StateNotifier<NutritionState>
   Future<void> logConsumption(String foodId, int quantity) async {
     // No modifika estado
   }
+  
+  @override
+  Future<void> fetchHistory() async {}
+
+  @override
+  void clearFoods() {
+    state = state.copyWith(foods: []);
+  }
 }
 
 void main() {

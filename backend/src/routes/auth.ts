@@ -68,7 +68,7 @@ router.post(
       }
       next(err);
     }
-  },
+  }
 );
 
 /**
@@ -103,7 +103,7 @@ router.post(
     } catch (err) {
       next(err);
     }
-  },
+  }
 );
 
 /**
@@ -123,21 +123,23 @@ router.get(
     } catch (err) {
       next(err);
     }
-  },
+  }
 );
 
 /**
  * ─── PUT /auth/me ───────────────────────────────────────────────────────────────
- * Permite al usuario autenticado actualizar username, gender, age, height, weight.
+ * Permite al usuario autenticado actualizar username, gender, age, height, weight, goal, trainingDays.
  */
 router.put(
   '/me',
   requireAuth,
   body('username').optional().isString(),
-  body('gender').optional().isString(),
+  body('gender').optional().isIn(['male', 'female', 'other']),
   body('age').optional().isInt({ min: 0 }),
   body('height').optional().isFloat({ min: 0 }),
   body('weight').optional().isFloat({ min: 0 }),
+  body('goal').optional().isIn(['bulk', 'cut', 'maintain']),
+  body('trainingDays').optional().isInt({ min: 0, max: 7 }),
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -146,25 +148,29 @@ router.put(
 
     try {
       const userId = req.userId!;
-      const { username, gender, age, height, weight } = req.body;
+      const { username, gender, age, height, weight, goal, trainingDays } = req.body;
       const updateData: Partial<{
         username: string;
-        gender: string;
+        gender: 'male' | 'female' | 'other';
         age: number;
         height: number;
         weight: number;
+        goal: 'bulk' | 'cut' | 'maintain';
+        trainingDays: number;
       }> = {};
 
       if (username !== undefined) updateData.username = username.trim();
-      if (gender !== undefined) updateData.gender = gender.trim();
+      if (gender !== undefined) updateData.gender = gender as 'male' | 'female' | 'other';
       if (age !== undefined) updateData.age = age;
       if (height !== undefined) updateData.height = height;
       if (weight !== undefined) updateData.weight = weight;
+      if (goal !== undefined) updateData.goal = goal as 'bulk' | 'cut' | 'maintain';
+      if (trainingDays !== undefined) updateData.trainingDays = trainingDays;
 
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
         { $set: updateData },
-        { new: true, runValidators: true },
+        { new: true, runValidators: true }
       ).select('-password');
 
       if (!updatedUser) {
@@ -175,7 +181,7 @@ router.put(
     } catch (err) {
       next(err);
     }
-  },
+  }
 );
 
 /**

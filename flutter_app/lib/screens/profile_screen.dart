@@ -141,6 +141,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           user.height != null ? '${user.height} cm' : '—'),
                       _buildInfoTile(
                           'Peso', user.weight != null ? '${user.weight} kg' : '—'),
+                      _buildInfoTile(
+                          'Objetivo',
+                          user.goal == 'bulk'
+                              ? 'Ganar volumen'
+                              : user.goal == 'cut'
+                                  ? 'Definir'
+                                  : 'Mantener'),
+                      _buildInfoTile(
+                          'Días de entrenamiento',
+                          user.trainingDays != null
+                              ? '${user.trainingDays}'
+                              : '—'),
                       const SizedBox(height: 32),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit, color: Colors.black),
