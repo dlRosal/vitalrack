@@ -59,4 +59,22 @@ class NutritionService {
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     return List<Map<String, dynamic>>.from(json['history'] as List<dynamic>);
   }
+  
+  /// Elimina una entrada de consumo concreta
+  Future<void> deleteConsumption(String id) async {
+    final uri = Uri.parse('$_baseUrl/nutrition/history/$id');
+    final response = await http.delete(uri, headers: _headers);
+    if (response.statusCode != 204) {
+      throw Exception('Error al eliminar consumo: ${response.body}');
+    }
+  }
+
+  /// Borra todo el historial de consumos del usuario
+  Future<void> clearHistory() async {
+    final uri = Uri.parse('$_baseUrl/nutrition/history');
+    final response = await http.delete(uri, headers: _headers);
+    if (response.statusCode != 204) {
+      throw Exception('Error al borrar historial: ${response.body}');
+    }
+  }
 }

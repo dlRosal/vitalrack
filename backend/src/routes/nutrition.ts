@@ -51,4 +51,35 @@ router.get('/history', requireAuth, async (req: AuthRequest, res: Response, next
   }
 });
 
+// DELETE /nutrition/history/:id
+// Elimina una entrada concreta del historial del usuario
+router.delete(
+  '/history/:id',
+  requireAuth,
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      await HistoryModel.deleteOne({ _id: id, user: req.userId });
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /nutrition/history
+// Borra por completo el historial de consumos del usuario
+router.delete(
+  '/history',
+  requireAuth,
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      await HistoryModel.deleteMany({ user: req.userId });
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 export default router;

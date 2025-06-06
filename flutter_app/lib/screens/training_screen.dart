@@ -106,6 +106,10 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
     }
   }
 
+  Future<void> _deleteRoutine(String id) async {
+    await ref.read(trainingProvider.notifier).deleteRoutine(id);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(trainingProvider);
@@ -293,6 +297,10 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen>
                           subtitle: Text(
                             'Ejercicios: ${r.exercises.length}',
                             style: const TextStyle(color: Colors.white70),
+                          ),
+                                                    trailing: IconButton(
+                            icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
+                            onPressed: () => _deleteRoutine(r.id),
                           ),
                           onTap: () {
                             Navigator.pushNamed(

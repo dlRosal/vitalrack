@@ -94,6 +94,19 @@ class TrainingNotifier extends StateNotifier<TrainingState> {
       state = state.copyWith(error: e.toString(), loading: false);
     }
   }
+  
+  Future<void> deleteRoutine(String id) async {
+    state = state.copyWith(loading: true, error: null);
+    try {
+      await _service.deleteRoutine(id);
+      state = state.copyWith(
+        routines: state.routines.where((r) => r.id != id).toList(),
+        loading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
+    }
+  }
 }
 
 /// Provider de TrainingService con token

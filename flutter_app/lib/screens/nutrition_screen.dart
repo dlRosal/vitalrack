@@ -16,6 +16,7 @@ class NutritionScreen extends ConsumerStatefulWidget {
 class _NutritionScreenState extends ConsumerState<NutritionScreen>
     with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
+  bool _hasSearched = false;
 
   // Valor por defecto para el límite calórico si no hay datos
   static const int defaultMaxCalories = 2000;
@@ -34,7 +35,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
 
     // Carga historial inicial
     Future.microtask(
-        () => ref.read(nutritionProvider.notifier).fetchHistory());
+      () => ref.read(nutritionProvider.notifier).fetchHistory(),
+    );
   }
 
   @override
@@ -47,6 +49,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
   Future<void> _search() async {
     final query = _searchController.text.trim();
     if (query.isNotEmpty) {
+      setState(() => _hasSearched = true);
       await ref.read(nutritionProvider.notifier).search(query);
     }
   }
@@ -62,6 +65,14 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
     );
   }
 
+  Future<void> _deleteConsumption(String id) async {
+    await ref.read(nutritionProvider.notifier).deleteConsumption(id);
+  }
+
+  Future<void> _clearHistory() async {
+    await ref.read(nutritionProvider.notifier).clearHistory();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(nutritionProvider);
@@ -73,7 +84,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
 
     // Total de calorías consumidas
     final totalCaloriesConsumed = state.history.fold<double>(
-        0, (sum, c) => sum + c.food.calories * c.quantity / 100);
+      0,
+      (sum, c) => sum + c.food.calories * c.quantity / 100,
+    );
 
     // Cálculo simple de calorías diarias según perfil
     int maxCalories = defaultMaxCalories;
@@ -81,7 +94,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
         user.weight != null &&
         user.height != null &&
         user.age != null) {
-      double bmr = 10 * user.weight! + 6.25 * user.height! - 5 * user.age!;
+      double bmr =
+          10 * user.weight! + 6.25 * user.height! - 5 * user.age!;
       if (user.gender == 'male') {
         bmr += 5;
       } else {
@@ -103,9 +117,44 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
       maxCalories = (bmr * activity * goalFactor).round();
     }
 
-    // Calcula el progreso para la barra, limitado a 1.0
+    // Objetivos de macronutrientes calculados de forma sencilla
+    double weight = user?.weight ?? 70;
+    double proteinGoalPerKg = 1.8;
+    if (user?.goal == 'bulk') proteinGoalPerKg = 2.0;
+    if (user?.goal == 'cut') proteinGoalPerKg = 2.2;
+    final proteinGoal = weight * proteinGoalPerKg;
+    final fatGoal = weight * 1.0;
+    final carbsGoal = (maxCalories - (proteinGoal * 4 + fatGoal * 9)) / 4;
+
+    final proteinConsumed = state.history.fold<double>(
+      0,
+      (s, c) => s + c.food.protein * c.quantity / 100,
+    );
+    final carbsConsumed = state.history.fold<double>(
+      0,
+      (s, c) => s + c.food.carbs * c.quantity / 100,
+    );
+    final fatConsumed = state.history.fold<double>(
+      0,
+      (s, c) => s + c.food.fat * c.quantity / 100,
+    );
+
     final progress =
         (totalCaloriesConsumed / maxCalories).clamp(0, 1).toDouble();
+
+    final diff = totalCaloriesConsumed - maxCalories;
+    Color barColor;
+    if (diff <= 50) {
+      barColor = const Color(0xFF64DD17);
+    } else if (diff <= 150) {
+      barColor = Colors.orange;
+    } else if (diff <= 250) {
+      barColor = Colors.deepOrange;
+    } else if (diff <= 350) {
+      barColor = Colors.red;
+    } else {
+      barColor = Colors.red.shade900;
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -163,6 +212,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                             ref
                                 .read(nutritionProvider.notifier)
                                 .clearFoods();
+                            setState(() => _hasSearched = false);
                           },
                         ),
                       ),
@@ -273,45 +323,124 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                         );
                       },
                     )
-                  : ListView.builder(
-                      itemCount: state.history.length,
-                      itemBuilder: (context, index) {
-                        final item = state.history[index];
-                        final food = item.food;
-                        return Card(
-                          color: cardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                  : _hasSearched && !state.loading
+                      ? const Center(
+                          child: Text(
+                            'Sin resultados para esa búsqueda',
+                            style: TextStyle(color: Colors.white70),
                           ),
-                          elevation: 10,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                            title: Text(
-                              food.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18,
+                        )
+                      : ListView.builder(
+                          itemCount: state.history.length,
+                          itemBuilder: (context, index) {
+                            final item = state.history[index];
+                            final food = item.food;
+                            return Card(
+                              color: cardColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(16),
                               ),
-                            ),
-                            subtitle: Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 6.0),
-                              child: Text(
-                                'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
+                              elevation: 10,
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8),
+                              child: ListTile(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10),
+                                title: Text(
+                                  food.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: 6.0),
+                                  child: Text(
+                                    'Cantidad: ${item.quantity}g | Calorías: ${(food.calories * item.quantity / 100).toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.remove_circle,
+                                    color: Colors.redAccent,
+                                    size: 30,
+                                  ),
+                                  onPressed: () =>
+                                      _deleteConsumption(item.id),
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
+                            );
+                          },
+                        ),
+            ),
+
+            const SizedBox(height: 12),
+
+            ElevatedButton.icon(
+              onPressed:
+                  state.history.isEmpty ? null : _clearHistory,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text('Nuevo Día'),
+            ),
+
+            const SizedBox(height: 12),
+
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'MACROS (g)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildMacroColumn(
+                        'Objetivo',
+                        proteinGoal,
+                        carbsGoal,
+                        fatGoal,
+                      ),
+                      _buildMacroColumn(
+                        'Consumido',
+                        proteinConsumed,
+                        carbsConsumed,
+                        fatConsumed,
+                      ),
+                      _buildMacroColumn(
+                        'Restante',
+                        proteinGoal - proteinConsumed,
+                        carbsGoal - carbsConsumed,
+                        fatGoal - fatConsumed,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 12),
@@ -350,10 +479,10 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                       scale: 1 +
                           0.05 *
                               (1 -
-                                  (progress - 0.5).abs() *
-                                      2),
+                                  (progress - 0.5).abs() * 2),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius:
+                            BorderRadius.circular(20),
                         child: Stack(
                           children: [
                             Container(
@@ -382,24 +511,19 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
                                     borderRadius:
                                         BorderRadius.circular(20),
                                     gradient: LinearGradient(
-                                      colors: const [
-                                        Color(0xFF76FF03),
-                                        Color(0xFF64DD17),
-                                        Color(0xFF33691E),
-                                      ],
-                                      stops: const [
-                                        0.0,
-                                        0.7,
-                                        1.0
+                                      colors: [
+                                        barColor.withOpacity(0.7),
+                                        barColor,
                                       ],
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.greenAccent
+                                        color: barColor
                                             .withOpacity(0.6),
                                         blurRadius: 12,
                                         spreadRadius: 1,
-                                        offset: const Offset(0, 0),
+                                        offset:
+                                            const Offset(0, 0),
                                       ),
                                     ],
                                   ),
@@ -457,6 +581,24 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMacroColumn(
+      String label, double p, double c, double f) {
+    TextStyle style =
+        const TextStyle(color: Colors.white70, fontSize: 14);
+    return Column(
+      children: [
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text('P: ${p.toStringAsFixed(0)}', style: style),
+        Text('C: ${c.toStringAsFixed(0)}', style: style),
+        Text('G: ${f.toStringAsFixed(0)}', style: style),
+      ],
     );
   }
 }

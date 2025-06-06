@@ -73,6 +73,28 @@ class NutritionNotifier extends StateNotifier<NutritionState> {
     }
   }
 
+  Future<void> deleteConsumption(String id) async {
+    state = state.copyWith(loading: true, error: null);
+    try {
+      await _service.deleteConsumption(id);
+      final historyList = await _service.fetchConsumptionHistory();
+      final items = historyList.map((e) => Consumption.fromJson(e)).toList();
+      state = state.copyWith(history: items, loading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
+    }
+  }
+
+  Future<void> clearHistory() async {
+    state = state.copyWith(loading: true, error: null);
+    try {
+      await _service.clearHistory();
+      state = state.copyWith(history: [], loading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), loading: false);
+    }
+  }
+
   void clearFoods() {
     state = state.copyWith(foods: []);
   }
