@@ -115,7 +115,7 @@ El proyecto incluye Workflows para:
 
 ## 👤 Autor
 
-Desarrollado con ❤️ por [Tu Nombre o Alias](https://github.com/tu-usuario)
+Desarrollado con ❤️ por dlRosal (https://github.com/dlRosal)
 
 ---
 
